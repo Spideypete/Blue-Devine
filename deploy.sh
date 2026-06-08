@@ -26,10 +26,10 @@ if [ -f ".env" ]; then
     cp .env .env.backup
 fi
 
-# Reset any local changes and pull latest
-git reset --hard
+# Force reset to remote and pull
+git fetch origin
+git reset --hard origin/main
 git clean -fd
-git pull origin main
 
 # Restore .env
 if [ -f ".env.backup" ]; then
