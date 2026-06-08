@@ -127,21 +127,32 @@
       background: #2ea043;
     }
 
-    .connection-bar button.danger {
-      background: #da3633;
-    }
+  .connection-bar button.danger {
+    background: #da3633;
+  }
 
-    .connection-bar button.danger:hover {
-      background: #f85149;
-    }
+  .connection-bar button.danger:hover {
+    background: #f85149;
+  }
 
-    .connection-bar button.secondary {
-      background: #30363d;
-    }
+  .connection-bar button.secondary {
+    background: #30363d;
+  }
 
-    .connection-bar button.secondary:hover {
-      background: #484f58;
-    }
+  .connection-bar button.secondary:hover {
+    background: #484f58;
+  }
+
+  .connection-bar button.ghost {
+    background: transparent;
+    border: 1px solid #30363d;
+    color: #8b949e;
+  }
+
+  .connection-bar button.ghost:hover {
+    border-color: #f85149;
+    color: #f85149;
+  }
 
     .status {
       font-size: 12px;
@@ -376,10 +387,11 @@
 
   <div class="main">
     <div class="connection-bar">
-      <input type="text" id="host" placeholder="Host (e.g. 127.0.0.1)" value="127.0.0.1">
-      <input type="text" id="port" placeholder="Port (e.g. 8888)" value="8888" style="width: 90px;">
+      <input type="text" id="host" placeholder="Host / IP">
+      <input type="text" id="port" placeholder="RCON Port" value="8888" style="width: 100px;">
       <input type="text" id="password" placeholder="RCON Password" type="password">
       <button id="connectBtn" onclick="connect()">Connect</button>
+      <button id="forgetBtn" class="ghost" onclick="forgetConnection()">Forget</button>
       <button id="testBtn" class="secondary" onclick="testConnection()" style="display:none;">Test Connection</button>
       <button id="disconnectBtn" class="danger" onclick="disconnect()" style="display:none;">Disconnect</button>
       <span id="status" class="status"><span class="status-dot"></span>Disconnected</span>
@@ -417,7 +429,7 @@
         { name: 'toggleglobalchat', args: ['0/1'], desc: 'Disable/Enable global chat' },
       ]},
       { category: 'Moderation', commands: [
-        { name: 'ban', args: ['player', 'reason'], desc: 'Ban a player' },
+        { name: 'ban', args: ['player', 'SteamID64', 'reason', 'duration'], desc: 'Ban a player' },
         { name: 'kick', args: ['player', 'reason'], desc: 'Kick a player' },
         { name: 'slay', args: ['SteamID64'], desc: 'Instantly kill a player\'s dinosaur' },
         { name: 'togglewhitelist', args: [], desc: 'Enable/disable whitelist mode' },
@@ -558,7 +570,17 @@
       };
     }
 
-    function testConnection() {
+    function forgetConnection() {
+  localStorage.removeItem('rcon_host');
+  localStorage.removeItem('rcon_port');
+  localStorage.removeItem('rcon_password');
+  document.getElementById('host').value = '';
+  document.getElementById('port').value = '8888';
+  document.getElementById('password').value = '';
+  appendLine('Connection details forgotten.', 'info');
+}
+
+function testConnection() {
       const host = document.getElementById('host').value;
       const port = document.getElementById('port').value;
       saveConnection();

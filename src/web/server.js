@@ -24,7 +24,7 @@ const COMMANDS = [
     { name: 'toggleglobalchat', args: ['0/1'], desc: 'Disable/Enable global chat' },
   ]},
   { category: 'Moderation', commands: [
-    { name: 'ban', args: ['player', 'reason'], desc: 'Ban a player' },
+    { name: 'ban', args: ['Name', 'SteamID64', 'Reason', 'Duration'], desc: 'Ban a player' },
     { name: 'kick', args: ['player', 'reason'], desc: 'Kick a player' },
     { name: 'slay', args: ['SteamID64'], desc: 'Instantly kill a player\'s dinosaur' },
     { name: 'togglewhitelist', args: [], desc: 'Enable/disable whitelist mode' },

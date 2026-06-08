@@ -10,7 +10,11 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((sub) => sub.setName('playerlist').setDescription('List all online players'))
   .addSubcommand((sub) => sub.setName('getplayerdata').setDescription('Get detailed player data').addStringOption((opt) => opt.setName('steamid').setDescription('Steam ID (optional)').setRequired(false)))
   .addSubcommand((sub) => sub.setName('kick').setDescription('Kick a player').addStringOption((opt) => opt.setName('player').setDescription('Steam ID or Name').setRequired(true)).addStringOption((opt) => opt.setName('reason').setDescription('Kick reason').setRequired(false)))
-  .addSubcommand((sub) => sub.setName('ban').setDescription('Ban a player').addStringOption((opt) => opt.setName('player').setDescription('Name or Steam ID').setRequired(true)).addStringOption((opt) => opt.setName('reason').setDescription('Ban reason').setRequired(false)))
+  .addSubcommand((sub) => sub.setName('ban').setDescription('Ban a player')
+    .addStringOption((opt) => opt.setName('name').setDescription('Player name').setRequired(true))
+    .addStringOption((opt) => opt.setName('steamid').setDescription('Steam ID').setRequired(true))
+    .addStringOption((opt) => opt.setName('reason').setDescription('Ban reason').setRequired(false))
+    .addStringOption((opt) => opt.setName('duration').setDescription('Duration').setRequired(false)))
   .addSubcommand((sub) => sub.setName('unban').setDescription('Unban a player').addStringOption((opt) => opt.setName('steamid').setDescription('Steam ID to unban').setRequired(true)))
   .addSubcommand((sub) => sub.setName('slay').setDescription('Kill a player instantly').addStringOption((opt) => opt.setName('steamid').setDescription('Steam ID').setRequired(true)))
   .addSubcommand((sub) => sub.setName('announce').setDescription('Send announcement').addStringOption((opt) => opt.setName('message').setDescription('Announcement message').setRequired(true)))
@@ -198,16 +202,18 @@ async function handleKick(interaction) {
 }
 
 async function handleBan(interaction) {
-  const name = interaction.options.getString('player');
+  const name = interaction.options.getString('name');
+  const steamId = interaction.options.getString('steamid');
   const reason = interaction.options.getString('reason') || 'No reason provided';
+  const duration = interaction.options.getString('duration') || '0';
 
   const embed = new EmbedBuilder()
     .setTitle('⚠️ Confirm BAN')
-    .setDescription(`Are you sure you want to ban **${name}**?\nReason: ${reason}`)
+    .setDescription(`Are you sure you want to ban **${name}**?\nSteam ID: ${steamId}\nReason: ${reason}\nDuration: ${duration}`)
     .setColor(0xffa500);
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`confirm_ban_${encodeURIComponent(name)}_${encodeURIComponent(reason)}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId(`confirm_ban_${encodeURIComponent(name)}_${encodeURIComponent(steamId)}_${encodeURIComponent(reason)}_${encodeURIComponent(duration)}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),
     new ButtonBuilder().setCustomId(`cancel_ban`).setLabel('Cancel').setStyle(ButtonStyle.Secondary)
   );
 
@@ -339,19 +345,30 @@ export async function handleButtonInteraction(interaction) {
   if (customId.startsWith('confirm_')) {
     const parts = customId.split('_');
     const action = parts[1];
-    const player = decodeURIComponent(parts[2]);
-    const reason = decodeURIComponent(parts[3]);
-
+    
     try {
-      const params = `${player},${reason}`;
+      let params;
+      if (action === 'ban') {
+        const name = decodeURIComponent(parts[2]);
+        const steamId = decodeURIComponent(parts[3]);
+        const reason = decodeURIComponent(parts[4]);
+        const duration = decodeURIComponent(parts[5]);
+        params = `${name},${steamId},${reason},${duration}`;
+      } else {
+        const player = decodeURIComponent(parts[2]);
+        const reason = decodeURIComponent(parts[3]);
+        params = `${player},${reason}`;
+      }
+      
       const result = await rconManager.execute(action, params);
-      await logger.log(action, interaction.user, player, result.data, result.success);
+      const target = action === 'ban' ? params.split(',')[0] : decodeURIComponent(parts[2]);
+      await logger.log(action, interaction.user, target, result.data, result.success);
 
       return interaction.update({
         embeds: [
           new EmbedBuilder()
             .setTitle(`✅ ${action.toUpperCase()} Successful`)
-            .setDescription(`${player} has been ${action}ed.\n\`\`\`${result.data}\`\`\``)
+            .setDescription(`${target} has been ${action}ed.\n\`\`\`${result.data}\`\`\``)
             .setColor(0x00ff00),
         ],
         components: [],
