@@ -98,6 +98,89 @@
       color: #f85149;
     }
 
+    .command-form-section {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .command-form-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #f0f6fc;
+    }
+
+    .command-form-section .desc {
+      color: #8b949e;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .command-form-section .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .command-form-section label {
+      font-size: 12px;
+      color: #8b949e;
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .command-form-section input {
+      width: 100%;
+      padding: 8px 12px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .command-form-section input:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    .command-form-section .form-actions {
+      margin-top: 12px;
+    }
+
+    .command-form-section button {
+      padding: 8px 16px;
+      background: #238636;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 500;
+    }
+
+    .command-form-section button:hover {
+      background: #2ea043;
+    }
+
+    .command-form-section button:disabled {
+      background: #30363d;
+      color: #8b949e;
+      cursor: not-allowed;
+    }
+
+    .command-form-section .connect-msg {
+      color: #8b949e;
+      font-size: 13px;
+      font-style: italic;
+    }
+
     .commands-section {
       margin-bottom: 20px;
     }
@@ -262,99 +345,20 @@
       cursor: not-allowed;
     }
 
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 100;
-      justify-content: center;
-      align-items: center;
+    .scrollbar::-webkit-scrollbar {
+      width: 8px;
     }
 
-    .modal.active {
-      display: flex;
+    .scrollbar::-webkit-scrollbar-track {
+      background: transparent;
     }
 
-    .modal-content {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 20px;
-      min-width: 360px;
-      max-width: 480px;
-    }
-
-    .modal-content h3 {
-      margin-bottom: 16px;
-      color: #58a6ff;
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .modal-field {
-      margin-bottom: 12px;
-    }
-
-    .modal-field label {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 12px;
-      color: #8b949e;
-      font-weight: 500;
-    }
-
-    .modal-field input {
-      width: 100%;
-      padding: 8px 12px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      color: #c9d1d9;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-    }
-
-    .modal-field input:focus {
-      outline: none;
-      border-color: #58a6ff;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 16px;
-    }
-
-    .btn-primary {
-      padding: 8px 16px;
-      background: #238636;
-      border: none;
-      color: white;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-      font-weight: 500;
-    }
-
-    .btn-primary:hover {
-      background: #2ea043;
-    }
-
-    .btn-secondary {
-      padding: 8px 16px;
+    .scrollbar::-webkit-scrollbar-thumb {
       background: #30363d;
-      border: none;
-      color: #c9d1d9;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-      font-weight: 500;
+      border-radius: 4px;
     }
 
-    .btn-secondary:hover {
+    .scrollbar::-webkit-scrollbar-thumb:hover {
       background: #484f58;
     }
   </style>
@@ -362,7 +366,7 @@
 <body>
   <div class="container">
     <h1>The Isle RCON Terminal</h1>
-    <p class="subtitle">Live browser RCON client for The Isle Evrima dedicated servers. Connect with your server's IP, RCON port, and password. Run any of the admin commands and see the server's response in real time.</p>
+    <p class="subtitle">Live browser RCON client for The Isle Evrima dedicated servers. Connect with your server's IP, RCON port, and password. Run any of the 27 admin commands — playerlist, announce, kick, ban, save, AI toggle, whitelist — and see the server's response in real time.</p>
 
     <div class="connection-section">
       <h2>Server Connection</h2>
@@ -376,9 +380,18 @@
       </div>
     </div>
 
+    <div class="command-form-section" id="commandForm" style="display:none;">
+      <h3 id="formTitle">announce</h3>
+      <p class="desc" id="formDesc">Broadcast a message to all players</p>
+      <div id="formFields"></div>
+      <div class="form-actions">
+        <button id="formSendBtn" onclick="sendFromForm()">Send Command</button>
+      </div>
+    </div>
+
     <div class="commands-section">
       <h2>Commands</h2>
-      <div class="cmd-category"><h3>Communication</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="openCommandModal({name:'announce',args:['message'],desc:'Broadcast a message to all players'});return false">announce</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'directmessage',args:['player','message'],desc:'Send a direct message to a player'});return false">directmessage</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'toggleglobalchat',args:['0/1'],desc:'Disable/Enable global chat'});return false">toggleglobalchat</a></div></div><div class="cmd-category"><h3>Info</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="openCommandModal({name:'serverdetails',args:[],desc:'Show current server configuration'});return false">serverdetails</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'playerlist',args:[],desc:'List all connected players'});return false">playerlist</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'getplayerdata',args:['SteamID64?'],desc:'Get player class, growth, health, location'});return false">getplayerdata</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'getqueuestatus',args:[],desc:'Show queue status when server is full'});return false">getqueuestatus</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'getplayables',args:[],desc:'List currently playable species'});return false">getplayables</a></div></div><div class="cmd-category"><h3>Moderation</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="openCommandModal({name:'kick',args:['player','reason'],desc:'Kick a player'});return false">kick</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'ban',args:['player','SteamID64','reason','duration'],desc:'Ban a player'});return false">ban</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'slay',args:['SteamID64'],desc:'Instantly kill a player dinosaur'});return false">slay</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'togglewhitelist',args:[],desc:'Enable/disable whitelist mode'});return false">togglewhitelist</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'addwhitelist',args:['playerId'],desc:'Add player(s) to whitelist'});return false">addwhitelist</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'removewhitelist',args:['playerId'],desc:'Remove player(s) from whitelist'});return false">removewhitelist</a></div></div><div class="cmd-category"><h3>Server</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="openCommandModal({name:'save',args:['backupName?'],desc:'Force a save (optional named backup)'});return false">save</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'pause',args:[],desc:'Pause/unpause the server'});return false">pause</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'custom',args:['command'],desc:'Send custom command'});return false">custom</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'togglenetupdatedistancechecks',args:['0/1'],desc:'Toggle network update distance checks'});return false">togglenetupdatedistancechecks</a></div></div><div class="cmd-category"><h3>World</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="openCommandModal({name:'wipecorpses',args:[],desc:'Remove all corpses from the map'});return false">wipecorpses</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'toggleai',args:['0/1'],desc:'Disable/Enable AI spawns'});return false">toggleai</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'disableaiclasses',args:['Class1,Class2'],desc:'Block specific AI species from spawning'});return false">disableaiclasses</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'aidensity',args:['0.0-1.0'],desc:'Set AI spawn density'});return false">aidensity</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'toggleailearning',args:['0/1'],desc:'Toggle AI learning'});return false">toggleailearning</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'togglemigrations',args:['0/1'],desc:'Toggle migration zones'});return false">togglemigrations</a></div></div><div class="cmd-category"><h3>Admin</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="openCommandModal({name:'updateplayables',args:['Class:enabled/disabled'],desc:'Update which species are playable'});return false">updateplayables</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'togglegrowthmultiplier',args:[],desc:'Toggle growth on/off without restart'});return false">togglegrowthmultiplier</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'setgrowthmultiplier',args:['value'],desc:'Change growth speed live (e.g., 2.0)'});return false">setgrowthmultiplier</a><a class="cmd-link" href="#" onclick="openCommandModal({name:'togglehumans',args:['0/1'],desc:'Disable/Enable humans'});return false">togglehumans</a></div></div>
+      <div class="cmd-category"><h3>Communication</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('announce',['message'],'Broadcast a message to all players');return false">announce</a><a class="cmd-link" href="#" onclick="showCommandForm('directmessage',['player','message'],'Send a direct message to a player');return false">directmessage</a><a class="cmd-link" href="#" onclick="showCommandForm('toggleglobalchat',['0/1'],'Disable/Enable global chat');return false">toggleglobalchat</a></div></div><div class="cmd-category"><h3>Info</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('serverdetails',[],'Show current server configuration');return false">serverdetails</a><a class="cmd-link" href="#" onclick="showCommandForm('playerlist',[],'List all connected players');return false">playerlist</a><a class="cmd-link" href="#" onclick="showCommandForm('getplayerdata',['SteamID64?'],'Get player class, growth, health, location');return false">getplayerdata</a><a class="cmd-link" href="#" onclick="showCommandForm('getqueuestatus',[],'Show queue status when server is full');return false">getqueuestatus</a><a class="cmd-link" href="#" onclick="showCommandForm('getplayables',[],'List currently playable species');return false">getplayables</a></div></div><div class="cmd-category"><h3>Moderation</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('kick',['player','reason'],'Kick a player');return false">kick</a><a class="cmd-link" href="#" onclick="showCommandForm('ban',['player','SteamID64','reason','duration'],'Ban a player');return false">ban</a><a class="cmd-link" href="#" onclick="showCommandForm('slay',['SteamID64'],'Instantly kill a player dinosaur');return false">slay</a><a class="cmd-link" href="#" onclick="showCommandForm('togglewhitelist',[],'Enable/disable whitelist mode');return false">togglewhitelist</a><a class="cmd-link" href="#" onclick="showCommandForm('addwhitelist',['playerId'],'Add player(s) to whitelist');return false">addwhitelist</a><a class="cmd-link" href="#" onclick="showCommandForm('removewhitelist',['playerId'],'Remove player(s) from whitelist');return false">removewhitelist</a></div></div><div class="cmd-category"><h3>Server</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('save',['backupName?'],'Force a save (optional named backup)');return false">save</a><a class="cmd-link" href="#" onclick="showCommandForm('pause',[],'Pause/unpause the server');return false">pause</a><a class="cmd-link" href="#" onclick="showCommandForm('custom',['command'],'Send custom command');return false">custom</a><a class="cmd-link" href="#" onclick="showCommandForm('togglenetupdatedistancechecks',['0/1'],'Toggle network update distance checks');return false">togglenetupdatedistancechecks</a></div></div><div class="cmd-category"><h3>World</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('wipecorpses',[],'Remove all corpses from the map');return false">wipecorpses</a><a class="cmd-link" href="#" onclick="showCommandForm('toggleai',['0/1'],'Disable/Enable AI spawns');return false">toggleai</a><a class="cmd-link" href="#" onclick="showCommandForm('disableaiclasses',['Class1,Class2'],'Block specific AI species from spawning');return false">disableaiclasses</a><a class="cmd-link" href="#" onclick="showCommandForm('aidensity',['0.0-1.0'],'Set AI spawn density');return false">aidensity</a><a class="cmd-link" href="#" onclick="showCommandForm('toggleailearning',['0/1'],'Toggle AI learning');return false">toggleailearning</a><a class="cmd-link" href="#" onclick="showCommandForm('togglemigrations',['0/1'],'Toggle migration zones');return false">togglemigrations</a></div></div><div class="cmd-category"><h3>Admin</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('updateplayables',['Class:enabled/disabled'],'Update which species are playable');return false">updateplayables</a><a class="cmd-link" href="#" onclick="showCommandForm('togglegrowthmultiplier',[],'Toggle growth on/off without restart');return false">togglegrowthmultiplier</a><a class="cmd-link" href="#" onclick="showCommandForm('setgrowthmultiplier',['value'],'Change growth speed live (e.g., 2.0)');return false">setgrowthmultiplier</a><a class="cmd-link" href="#" onclick="showCommandForm('togglehumans',['0/1'],'Disable/Enable humans');return false">togglehumans</a></div></div>
     </div>
 
     <div class="terminal-section">
@@ -397,114 +410,56 @@
     </div>
   </div>
 
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <h3 id="modalTitle">Command</h3>
-      <div id="modalFields"></div>
-      <div class="modal-actions">
-        <button class="btn-primary" onclick="submitModal()">Send Command</button>
-        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    const COMMANDS = [
-      { category: 'Communication', commands: [
-        { name: 'announce', args: ['message'], desc: 'Broadcast a message to all players' },
-        { name: 'directmessage', args: ['player', 'message'], desc: 'Send a direct message to a player' },
-        { name: 'toggleglobalchat', args: ['0/1'], desc: 'Disable/Enable global chat' },
-      ]},
-      { category: 'Info', commands: [
-        { name: 'serverdetails', args: [], desc: 'Show current server configuration' },
-        { name: 'playerlist', args: [], desc: 'List all connected players' },
-        { name: 'getplayerdata', args: ['SteamID64?'], desc: 'Get player class, growth, health, location' },
-        { name: 'getqueuestatus', args: [], desc: 'Show queue status when server is full' },
-        { name: 'getplayables', args: [], desc: 'List currently playable species' },
-      ]},
-      { category: 'Moderation', commands: [
-        { name: 'kick', args: ['player', 'reason'], desc: 'Kick a player' },
-        { name: 'ban', args: ['player', 'SteamID64', 'reason', 'duration'], desc: 'Ban a player' },
-        { name: 'slay', args: ['SteamID64'], desc: 'Instantly kill a player\'s dinosaur' },
-        { name: 'togglewhitelist', args: [], desc: 'Enable/disable whitelist mode' },
-        { name: 'addwhitelist', args: ['playerId'], desc: 'Add player(s) to whitelist' },
-        { name: 'removewhitelist', args: ['playerId'], desc: 'Remove player(s) from whitelist' },
-      ]},
-      { category: 'Server', commands: [
-        { name: 'save', args: ['backupName?'], desc: 'Force a save (optional named backup)' },
-        { name: 'pause', args: [], desc: 'Pause/unpause the server' },
-        { name: 'custom', args: ['command'], desc: 'Send custom command' },
-        { name: 'togglenetupdatedistancechecks', args: ['0/1'], desc: 'Toggle network update distance checks' },
-      ]},
-      { category: 'World', commands: [
-        { name: 'wipecorpses', args: [], desc: 'Remove all corpses from the map' },
-        { name: 'toggleai', args: ['0/1'], desc: 'Disable/Enable AI spawns' },
-        { name: 'disableaiclasses', args: ['Class1,Class2'], desc: 'Block specific AI species from spawning' },
-        { name: 'aidensity', args: ['0.0-1.0'], desc: 'Set AI spawn density' },
-        { name: 'toggleailearning', args: ['0/1'], desc: 'Toggle AI learning' },
-        { name: 'togglemigrations', args: ['0/1'], desc: 'Toggle migration zones' },
-      ]},
-      { category: 'Admin', commands: [
-        { name: 'updateplayables', args: ['Class:enabled/disabled'], desc: 'Update which species are playable' },
-        { name: 'togglegrowthmultiplier', args: [], desc: 'Toggle growth on/off without restart' },
-        { name: 'setgrowthmultiplier', args: ['value'], desc: 'Change growth speed live (e.g., 2.0)' },
-        { name: 'togglehumans', args: ['0/1'], desc: 'Disable/Enable humans' },
-      ]},
-    ];
-
-    let ws = null;
-    let connected = false;
     let currentCommand = null;
 
-    function saveConnection() {
-      localStorage.setItem('rcon_host', document.getElementById('host').value);
-      localStorage.setItem('rcon_port', document.getElementById('port').value);
-      localStorage.setItem('rcon_password', document.getElementById('password').value);
-    }
-
-    function loadConnection() {
-      const host = localStorage.getItem('rcon_host');
-      const port = localStorage.getItem('rcon_port');
-      const password = localStorage.getItem('rcon_password');
-      if (host) document.getElementById('host').value = host;
-      if (port) document.getElementById('port').value = port;
-      if (password) document.getElementById('password').value = password;
-    }
-
-    function openCommandModal(cmd) {
-      currentCommand = cmd;
-      document.getElementById('modalTitle').textContent = cmd.name;
-      const fields = document.getElementById('modalFields');
+    function showCommandForm(name, args, desc) {
+      currentCommand = { name, args, desc };
+      const form = document.getElementById('commandForm');
+      document.getElementById('formTitle').textContent = name;
+      document.getElementById('formDesc').textContent = desc;
+      const fields = document.getElementById('formFields');
       fields.innerHTML = '';
-      if (cmd.args.length === 0) {
-        fields.innerHTML = '<p style="color:#8b949e; font-size:13px;">No arguments required. Click Send Command to execute.</p>';
+
+      if (args.length === 0) {
+        fields.innerHTML = '<p class="connect-msg" id="connectMsg">No arguments required. Click Send Command to execute.</p>';
       } else {
-        for (const arg of cmd.args) {
+        for (const arg of args) {
           const div = document.createElement('div');
-          div.className = 'modal-field';
-          div.innerHTML = `<label>${arg}</label><input type="text" placeholder="${arg}" data-arg="${arg}">`;
+          div.style.marginBottom = '8px';
+          const label = document.createElement('label');
+          label.textContent = arg;
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = arg;
+          input.id = 'field_' + arg;
+          div.appendChild(label);
+          div.appendChild(input);
           fields.appendChild(div);
         }
+        const msg = document.createElement('p');
+        msg.className = 'connect-msg';
+        msg.id = 'connectMsg';
+        msg.textContent = 'Connect to your server first.';
+        fields.appendChild(msg);
       }
-      document.getElementById('modal').classList.add('active');
+
+      form.style.display = 'block';
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
-      currentCommand = null;
-    }
-
-    function submitModal() {
+    function sendFromForm() {
       if (!currentCommand) return;
-      const inputs = document.querySelectorAll('#modalFields input');
       const values = [];
-      for (const input of inputs) {
-        values.push(input.value);
+      for (const arg of currentCommand.args) {
+        const input = document.getElementById('field_' + arg);
+        if (input && input.value.trim()) {
+          values.push(input.value.trim());
+        }
       }
-      const args = values.filter(v => v.trim() !== '').join(',');
+      const args = values.join(',');
       const cmdStr = args ? `${currentCommand.name} ${args}` : currentCommand.name;
       document.getElementById('commandInput').value = cmdStr;
-      closeModal();
       sendCommand();
     }
 
@@ -617,6 +572,21 @@
 
     function clearTerminal() {
       document.getElementById('terminal').innerHTML = '<div class="placeholder">Connect and send a command to see output here…</div>';
+    }
+
+    function saveConnection() {
+      localStorage.setItem('rcon_host', document.getElementById('host').value);
+      localStorage.setItem('rcon_port', document.getElementById('port').value);
+      localStorage.setItem('rcon_password', document.getElementById('password').value);
+    }
+
+    function loadConnection() {
+      const host = localStorage.getItem('rcon_host');
+      const port = localStorage.getItem('rcon_port');
+      const password = localStorage.getItem('rcon_password');
+      if (host) document.getElementById('host').value = host;
+      if (port) document.getElementById('port').value = port;
+      if (password) document.getElementById('password').value = password;
     }
 
     document.getElementById('commandInput').addEventListener('keydown', (e) => {
