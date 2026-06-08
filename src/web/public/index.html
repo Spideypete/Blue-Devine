@@ -121,9 +121,7 @@
     }
 
     .cmd-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px 12px;
+      line-height: 1.8;
     }
 
     .cmd-btn {
@@ -133,12 +131,66 @@
       cursor: pointer;
       font-size: 13px;
       font-family: inherit;
-      padding: 2px 0;
+      padding: 0;
+      margin: 0;
+      display: inline;
+      line-height: inherit;
     }
 
     .cmd-btn:hover {
       color: #58a6ff;
       text-decoration: underline;
+    }
+
+    .cmd-category h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 6px;
+    }
+
+    .cmd-list {
+      line-height: 1.6;
+    }
+
+    .cmd-btn {
+      background: none;
+      border: none;
+      color: #c9d1d9;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      padding: 0;
+      margin: 0;
+      display: inline;
+      line-height: inherit;
+    }
+
+    .cmd-btn:hover {
+      color: #58a6ff;
+      text-decoration: underline;
+    }
+
+    .cmd-btn {
+      background: none;
+      border: none;
+      color: #c9d1d9;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      padding: 0;
+      margin-right: 4px;
+    }
+
+    .cmd-btn:hover {
+      color: #58a6ff;
+      text-decoration: underline;
+    }
+
+    .cmd-separator {
+      color: #8b949e;
+      margin: 0 2px;
+      font-size: 13px;
     }
 
     .terminal-section {
@@ -497,13 +549,24 @@
         const listDiv = document.createElement('div');
         listDiv.className = 'cmd-list';
         
-        for (const cmd of cat.commands) {
+        for (let i = 0; i < cat.commands.length; i++) {
+          const cmd = cat.commands[i];
           const btn = document.createElement('button');
           btn.className = 'cmd-btn';
           btn.textContent = cmd.name;
           btn.title = cmd.desc;
           btn.onclick = () => openCommandModal(cmd);
           listDiv.appendChild(btn);
+          
+          if (i < cat.commands.length - 1) {
+            listDiv.appendChild(document.createTextNode(' '));
+          }
+        }
+        
+        catDiv.appendChild(listDiv);
+        container.appendChild(catDiv);
+      }
+    }
         }
         
         catDiv.appendChild(listDiv);
