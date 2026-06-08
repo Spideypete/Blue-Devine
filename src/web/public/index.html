@@ -126,46 +126,53 @@
       color: #f85149;
     }
 
-    .connection-fields button:disabled {
-      background: #30363d;
-      color: #8b949e;
-      cursor: not-allowed;
+    .commands-section {
+      margin-bottom: 20px;
     }
 
-    .main-layout {
-      display: flex;
-      gap: 16px;
-    }
-
-    .commands-panel {
-      width: 200px;
-      flex-shrink: 0;
-    }
-
-    .commands-panel h3 {
-      font-size: 12px;
-      text-transform: uppercase;
-      color: #8b949e;
-      margin-bottom: 8px;
+    .commands-section h2 {
+      font-size: 16px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      color: #f0f6fc;
     }
 
-    .cmd-list {
+    .cmd-category {
       margin-bottom: 16px;
     }
 
+    .cmd-category h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 6px;
+    }
+
+    .cmd-category {
+      margin-bottom: 16px;
+    }
+
+    .cmd-category h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 6px;
+    }
+
+    .cmd-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+    }
+
     .cmd-btn {
-      display: block;
-      width: 100%;
-      padding: 4px 0;
       background: none;
       border: none;
       color: #c9d1d9;
       cursor: pointer;
-      text-align: left;
       font-size: 13px;
       font-family: inherit;
+      padding: 2px 0;
     }
 
     .cmd-btn:hover {
@@ -173,9 +180,23 @@
       text-decoration: underline;
     }
 
-    .terminal-panel {
-      flex: 1;
-      min-width: 0;
+    .cmd-btn {
+      background: none;
+      border: none;
+      color: #c9d1d9;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      padding: 2px 0;
+    }
+
+    .cmd-btn:hover {
+      color: #58a6ff;
+      text-decoration: underline;
+    }
+
+    .terminal-section {
+      margin-bottom: 20px;
     }
 
     .terminal-header {
@@ -213,8 +234,8 @@
       border: 1px solid #30363d;
       border-radius: 6px;
       padding: 12px;
-      min-height: 400px;
-      max-height: 600px;
+      min-height: 300px;
+      max-height: 500px;
       overflow-y: auto;
       font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
       font-size: 13px;
@@ -434,25 +455,24 @@
       </div>
     </div>
 
-    <div class="main-layout">
-      <div class="commands-panel">
-        <div id="commandList"></div>
-      </div>
+    <div class="commands-section">
+      <h2>Commands</h2>
+      <div id="commandList"></div>
+    </div>
 
-      <div class="terminal-panel">
-        <div class="terminal-header">
-          <h2>Terminal Output</h2>
-          <button onclick="clearTerminal()">Clear</button>
-        </div>
-        <div class="terminal scrollbar" id="terminal">
-          <div class="placeholder">Connect and send a command to see output here…</div>
-        </div>
-
-        <div class="command-bar">
-          <input type="text" id="commandInput" placeholder="Type command..." disabled>
-          <button id="sendBtn" onclick="sendCommand()" disabled>Send Command</button>
-        </div>
+    <div class="terminal-section">
+      <div class="terminal-header">
+        <h2>Terminal Output</h2>
+        <button onclick="clearTerminal()">Clear</button>
       </div>
+      <div class="terminal scrollbar" id="terminal">
+        <div class="placeholder">Connect and send a command to see output here…</div>
+      </div>
+    </div>
+
+    <div class="command-bar">
+      <input type="text" id="commandInput" placeholder="Type command..." disabled>
+      <button id="sendBtn" onclick="sendCommand()" disabled>Send Command</button>
     </div>
   </div>
 
@@ -535,16 +555,25 @@
       container.innerHTML = '';
       for (const cat of COMMANDS) {
         const catDiv = document.createElement('div');
-        catDiv.className = 'cmd-list';
-        catDiv.innerHTML = `<h3>${cat.category}</h3>`;
+        catDiv.className = 'cmd-category';
+        
+        const title = document.createElement('h3');
+        title.textContent = cat.category;
+        catDiv.appendChild(title);
+        
+        const listDiv = document.createElement('div');
+        listDiv.className = 'cmd-list';
+        
         for (const cmd of cat.commands) {
           const btn = document.createElement('button');
           btn.className = 'cmd-btn';
           btn.textContent = cmd.name;
           btn.title = cmd.desc;
           btn.onclick = () => openCommandModal(cmd);
-          catDiv.appendChild(btn);
+          listDiv.appendChild(btn);
         }
+        
+        catDiv.appendChild(listDiv);
         container.appendChild(catDiv);
       }
     }
