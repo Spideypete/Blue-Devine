@@ -44,5 +44,21 @@ npm install --production --omit=dev
 echo "✅ Dependencies installed"
 echo ""
 
-echo "🚀 Starting bot..."
+echo "🌐 Starting web terminal..."
+node src/web/server.js &
+WEB_PID=$!
+
+echo "🤖 Starting Discord bot..."
 npm start
+
+cleanup() {
+    echo ""
+    echo "[Shutdown] Stopping services..."
+    kill $WEB_PID 2>/dev/null || true
+    wait
+    echo "[Shutdown] Done"
+    exit 0
+}
+
+trap cleanup SIGINT SIGTERM
+wait
