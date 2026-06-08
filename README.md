@@ -1,159 +1,163 @@
-# 🦖 Evrima Control Center
+# 🦖 Evrima RCON Bot
 
-Discord-based control panel for The Isle Evrima servers using RCON. Replicates a professional RCON web panel entirely inside Discord.
+Production-ready Discord bot for controlling The Isle Evrima servers via RCON. Built for Pterodactyl deployment.
 
 ## Features
 
-- **Main Dashboard** - One-click access to all server controls
-- **Player Management** - List, search, view data, kick, ban, and direct message players
-- **Announcements** - Send instant, scheduled, or automatic announcements
-- **World Controls** - Toggle AI, adjust AI density, toggle humans, set growth multiplier, wipe corpses, update playables
-- **Server Controls** - Save, view details, check queue, restart, pause server
-- **Whitelist Management** - Enable/disable whitelist, add/remove Steam IDs, view list
-- **Custom Console** - Execute any RCON command with history and favorites
-- **Audit Logging** - Every action logged with Discord user, action, target, timestamp, and server response
-- **Role-Based Security** - Only authorized Discord roles can access admin functions
-- **Confirmation Dialogs** - Destructive actions require confirmation
+- **Slash Commands** - 20+ commands covering all Evrima RCON functionality
+- **Evrima RCON Protocol** - Custom binary protocol support (not Source RCON)
+- **Persistent Connections** - Reusable RCON connection with auto-reconnect
+- **Role-Based Permissions** - OWNER, ADMIN, MODERATOR, USER tiers
+- **Rate Limiting** - 5 commands per minute per user
+- **Audit Logging** - All actions logged to Discord channel
+- **Error Handling** - Graceful failures with user-friendly embeds
+- **Pterodactyl Ready** - Environment variable configuration
 
 ## Requirements
 
-- Node.js 18.0.0 or higher
-- A Discord bot token with Applications Commands intent
+- Node.js >= 18.0.0
+- Discord Bot Token with Applications Commands intent
 - The Isle Evrima server with RCON enabled
-- RCON password
+- RCON password from Game.ini
 
 ## Installation
 
-1. Clone or download this repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy `config.example.json` to `config.json`
-4. Fill in your Discord bot token, client ID, guild ID, audit channel ID, RCON host, port, password, and authorized role IDs
-5. Register Discord application commands (slash commands) with:
-   ```bash
-   # You'll need to use the Discord Developer Portal or a script to register commands
-   ```
-6. Start the bot:
-   ```bash
-   npm start
-   ```
+```bash
+npm install
+```
 
 ## Configuration
 
-Edit `config.json` with your settings:
+Copy `.env.example` to `.env` and fill in:
 
-```json
-{
-  "discord": {
-    "token": "YOUR_BOT_TOKEN",
-    "clientId": "YOUR_BOT_CLIENT_ID",
-    "guildId": "YOUR_GUILD_ID",
-    "auditChannelId": "YOUR_AUDIT_LOG_CHANNEL_ID"
-  },
-  "rcon": {
-    "host": "127.0.0.1",
-    "port": 27015,
-    "password": "YOUR_RCON_PASSWORD"
-  },
-  "authorizedRoles": ["ROLE_ID_1", "ROLE_ID_2"],
-  "autoAnnouncements": [],
-  "favoriteCommands": []
-}
+```env
+DISCORD_TOKEN=your_bot_token
+DISCORD_CLIENT_ID=your_client_id
+GUILD_ID=your_guild_id
+LOG_CHANNEL_ID=your_log_channel_id
+OWNER_ROLE_ID=owner_role_id
+ADMIN_ROLE_ID=admin_role_id
+MOD_ROLE_ID=mod_role_id
+RCON_HOST=127.0.0.1
+RCON_PORT=8888
+RCON_PASSWORD=your_rcon_password
+RCON_TIMEOUT=10000
 ```
 
 ## Discord Bot Setup
 
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
-2. Create a new application
-3. Add a bot to the application
-4. Under **Bot**, enable:
-   - **Presence Intent** (if needed)
-   - **Server Members Intent**
-5. Copy the bot token
-6. Under **OAuth2 > URL Generator**, select:
-   - Scopes: `bot`, `applications.commands`
-   - Bot Permissions: `Send Messages`, `Use Slash Commands`, `Embed Links`, `Read Message History`
-7. Use the generated URL to invite the bot to your server
+2. Create application, add bot
+3. Enable **Applications Commands** intent
+4. Invite with `bot` + `applications.commands` scopes
+5. Required permissions: `Send Messages`, `Embed Links`, `Use Slash Commands`, `Read Message History`
 
 ## RCON Setup
 
-Enable RCON on your Evrima server by adding these settings to your server configuration (usually `Game.ini` or server launch parameters):
+In your server's `Game.ini`:
 
-```
-RCONEnabled=True
-RCONPort=27015
-RCONPassword=your_password_here
+```ini
+[/Script/TheIsle.TIGameSession]
+bRconEnabled=True
+RconPort=8888
+RconPassword=your_secure_password
 ```
 
-## Project Structure
-
-```
-evrima-bot/
-├── src/
-│   ├── index.js          - Main bot entry point
-│   ├── rcon.js           - RCON client wrapper
-│   ├── ui.js             - UI helper functions (embeds, buttons, modals)
-│   ├── security.js       - Role-based access control
-│   ├── logger.js         - Audit logging with Discord embeds
-│   └── menus/
-│       ├── players.js    - Player management menu
-│       ├── announcements.js - Announcement menu
-│       ├── world.js      - World controls menu
-│       ├── server.js     - Server controls menu
-│       └── whitelist.js  - Whitelist management menu
-├── config.example.json   - Example configuration file
-├── package.json          - Node.js dependencies
-└── README.md             - This file
-```
+Restart server after changes. Open port 8888 in firewall.
 
 ## Commands
 
-The bot uses Discord buttons and dropdowns for all interactions. No text commands needed.
+### Player Management
+- `/evrima playerlist` - List all online players
+- `/evrima getplayerdata` - Get detailed player data
+- `/evrima kick` - Kick a player (requires confirmation)
+- `/evrima ban` - Ban a player (requires confirmation)
+- `/evrima unban` - Unban a player
 
-### Main Menu
-- **Players** - Access player management tools
-- **Announcements** - Send server announcements
-- **World Controls** - Adjust world settings
-- **Server Controls** - Manage server operations
-- **Whitelist** - Manage whitelist
-- **Live Status** - View real-time server status
-- **Custom Console** - Execute raw RCON commands
+### Communication
+- `/evrima announce` - Send server-wide announcement
+- `/evrima directmessage` - Send private message to player
 
-## Logging
+### Server
+- `/evrima save` - Save server state
+- `/evrima serverdetails` - Get server configuration
+- `/evrima queue` - Get queue status
+- `/evrima pause` - Pause server
+- `/evrima unpause` - Unpause server
 
-All actions are logged locally to `logs/audit.log` and optionally posted to a Discord audit channel. Each log entry contains:
+### World
+- `/evrima toggleai` - Toggle AI on/off
+- `/evrima togglemigrations` - Toggle migrations
+- `/evrima togglegrowthmultiplier` - Toggle growth multiplier
+- `/evrima setgrowthmultiplier` - Set growth multiplier value
+- `/evrima wipecorpses` - Remove all corpses
+- `/evrima aidensity` - Set AI spawn density (0.0-1.0)
+- `/evrima togglehumans` - Toggle human characters
 
-- Timestamp
-- Discord user (name and ID)
-- Action performed
-- Target (player ID, Steam ID, etc.)
-- Server response
-- Success/failure status
+### Whitelist
+- `/evrima togglewhitelist` - Enable/disable whitelist
+- `/evrima addwhitelist` - Add player to whitelist
+- `/evrima removewhitelist` - Remove player from whitelist
 
-## Security
+### Playables
+- `/evrima playables` - List all playable dinosaurs
+- `/evrima updateplayables` - Update playable dinosaur configuration
 
-- Administrative actions are restricted to Discord roles specified in `config.json`
-- Users with the `Administrator` permission always have access
-- Destructive actions (kick, ban, restart, wipe) require typing "CONFIRM"
-- All actions are logged to the audit channel
+### Custom
+- `/evrima custom` - Send any raw RCON command
 
-## Troubleshooting
+## Permissions
 
-**Bot doesn't respond:**
-- Ensure the bot token is correct
-- Check that the bot is online in your server
-- Verify the bot has the required permissions
+| Role | Access |
+|------|--------|
+| OWNER | Full access to all commands |
+| ADMIN | All RCON commands |
+| MODERATOR | Player management, announcements, server info |
+| USER | No access |
 
-**RCON connection fails:**
-- Verify RCON is enabled on your server
-- Check the RCON port and password
-- Ensure firewall allows the connection
+Configure via Discord role IDs in `.env`.
 
-**Commands not working:**
-- Make sure your role is in the `authorizedRoles` list
-- Check console for error messages
+## Pterodactyl Deployment
+
+1. Create new Node.js server
+2. Upload bot files
+3. Set environment variables in Pterodactyl panel
+4. Set startup command: `node src/index.js`
+5. Install dependencies: `npm install --production`
+
+## Architecture
+
+```
+src/
+├── index.js              # Discord client + slash command registration
+├── commands/
+│   └── evrima.js         # All command handlers
+├── permissions/
+│   └── roles.js          # Role-based access control
+├── rcon/
+│   ├── client.js         # Evrima binary RCON protocol implementation
+│   └── manager.js        # Connection management wrapper
+└── utils/
+    ├── logger.js         # Audit logging to Discord channel
+    └── rateLimiter.js    # Per-user rate limiting
+```
+
+## RCON Protocol
+
+The bot implements Evrima's custom binary RCON protocol:
+
+- Auth: `0x01 + password + NUL`
+- Commands: `0x02 + opcode_byte + params + NUL`
+- Response: `0x03 + data`
+
+Uses proper opcodes for all 27 documented Evrima commands.
+
+## Error Handling
+
+- RCON connection failure: Auto-reconnect with exponential backoff
+- Invalid commands: Returns error embed
+- Timeout: Configurable via `RCON_TIMEOUT`
+- Rate limit: Returns remaining wait time
 
 ## License
 

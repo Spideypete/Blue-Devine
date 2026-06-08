@@ -1,0 +1,361 @@
+import { SlashCommandBuilder, EmbedBuilder, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { hasPermission, getUserRole } from '../permissions/roles.js';
+import rconManager from '../rcon/manager.js';
+import { logger } from '../utils/logger.js';
+
+export const data = new SlashCommandBuilder()
+  .setName('evrima')
+  .setDescription('Evrima Server Control Panel')
+  .addSubcommand((sub) => sub.setName('help').setDescription('Show available commands'))
+  .addSubcommand((sub) => sub.setName('playerlist').setDescription('List all online players'))
+  .addSubcommand((sub) => sub.setName('getplayerdata').setDescription('Get detailed player data'))
+  .addSubcommand((sub) => sub.setName('kick').setDescription('Kick a player').addStringOption((opt) => opt.setName('player').setDescription('Player name or Steam ID').setRequired(true)).addStringOption((opt) => opt.setName('reason').setDescription('Kick reason').setRequired(false)))
+  .addSubcommand((sub) => sub.setName('ban').setDescription('Ban a player').addStringOption((opt) => opt.setName('player').setDescription('Player name or Steam ID').setRequired(true)).addStringOption((opt) => opt.setName('reason').setDescription('Ban reason').setRequired(false)))
+  .addSubcommand((sub) => sub.setName('unban').setDescription('Unban a player').addStringOption((opt) => opt.setName('steamid').setDescription('Steam ID to unban').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('announce').setDescription('Send announcement').addStringOption((opt) => opt.setName('message').setDescription('Announcement message').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('directmessage').setDescription('Send direct message to player').addStringOption((opt) => opt.setName('player').setDescription('Player name or Steam ID').setRequired(true)).addStringOption((opt) => opt.setName('message').setDescription('Message content').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('save').setDescription('Save the server'))
+  .addSubcommand((sub) => sub.setName('serverdetails').setDescription('Get server details'))
+  .addSubcommand((sub) => sub.setName('queue').setDescription('Get queue status'))
+  .addSubcommand((sub) => sub.setName('pause').setDescription('Pause the server'))
+  .addSubcommand((sub) => sub.setName('unpause').setDescription('Unpause the server'))
+  .addSubcommand((sub) => sub.setName('toggleai').setDescription('Toggle AI on/off').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('togglemigrations').setDescription('Toggle migrations').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('togglegrowthmultiplier').setDescription('Toggle growth multiplier').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('setgrowthmultiplier').setDescription('Set growth multiplier value').addNumberOption((opt) => opt.setName('value').setDescription('Multiplier value').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('wipecorpses').setDescription('Wipe all corpses'))
+  .addSubcommand((sub) => sub.setName('togglewhitelist').setDescription('Enable whitelist').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('addwhitelist').setDescription('Add player to whitelist').addStringOption((opt) => opt.setName('playerid').setDescription('Steam ID or EOS ID').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('removewhitelist').setDescription('Remove player from whitelist').addStringOption((opt) => opt.setName('playerid').setDescription('Steam ID or EOS ID').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('playables').setDescription('Get playable dinosaurs list'))
+  .addSubcommand((sub) => sub.setName('updateplayables').setDescription('Update playable dinosaurs').addStringOption((opt) => opt.setName('config').setDescription('Format: Class:enabled,Class:disabled').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('togglehumans').setDescription('Toggle humans on/off').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('aidensity').setDescription('Set AI density').addNumberOption((opt) => opt.setName('density').setDescription('Density 0.0-1.0').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('custom').setDescription('Send custom RCON command').addStringOption((opt) => opt.setName('command').setDescription('Full RCON command').setRequired(true)));
+
+export async function execute(interaction) {
+  const subcommand = interaction.options.getSubcommand();
+
+  if (subcommand === 'help') {
+    return showHelp(interaction);
+  }
+
+  const userRole = getUserRole(interaction.member);
+
+  if (!hasPermission(userRole, subcommand)) {
+    return interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle('❌ Access Denied')
+          .setDescription('You do not have permission to use this command.')
+          .setColor(0xff0000),
+      ],
+      ephemeral: true,
+    });
+  }
+
+  const { rateLimiter } = await import('../utils/rateLimiter.js');
+  if (rateLimiter.isLimited(interaction.user.id)) {
+    return interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle('⏳ Rate Limited')
+          .setDescription(`Please wait ${rateLimiter.getRemainingTime(interaction.user.id)}s before using another command.`)
+          .setColor(0xffa500),
+      ],
+      ephemeral: true,
+    });
+  }
+
+  await interaction.deferReply();
+
+  try {
+    switch (subcommand) {
+      case 'playerlist':
+        return handlePlayerList(interaction);
+      case 'getplayerdata':
+        return handleGetPlayerData(interaction);
+      case 'kick':
+        return handleKickBan(interaction, subcommand);
+      case 'ban':
+        return handleKickBan(interaction, subcommand);
+      case 'unban':
+        return handleUnban(interaction);
+      case 'announce':
+        return handleAnnounce(interaction);
+      case 'directmessage':
+        return handleDirectMessage(interaction);
+      case 'save':
+        return handleSave(interaction);
+      case 'serverdetails':
+        return handleServerDetails(interaction);
+      case 'queue':
+        return handleQueue(interaction);
+      case 'pause':
+        return handlePause(interaction, true);
+      case 'unpause':
+        return handlePause(interaction, false);
+      case 'toggleai':
+        return handleToggleAI(interaction, interaction.options.getBoolean('state'));
+      case 'disableai':
+        return handleToggleAI(interaction, false);
+      case 'togglemigrations':
+        return handleToggle(interaction, 'togglemigrations');
+      case 'togglegrowthmultiplier':
+        return handleToggle(interaction, 'togglegrowthmultiplier');
+      case 'setgrowthmultiplier':
+        return handleSetGrowthMultiplier(interaction);
+      case 'wipecorpses':
+        return handleWipeCorpses(interaction);
+      case 'togglewhitelist':
+        return handleToggleWhitelist(interaction, true);
+      case 'disablewhitelist':
+        return handleToggleWhitelist(interaction, false);
+      case 'addwhitelist':
+        return handleWhitelist(interaction, 'addwhitelist');
+      case 'removewhitelist':
+        return handleWhitelist(interaction, 'removewhitelist');
+      case 'playables':
+        return handlePlayables(interaction, 'playables', null);
+      case 'updateplayables':
+        return handlePlayables(interaction, 'updateplayables', interaction.options.getString('config'));
+      case 'togglehumans':
+        return handleToggleHumans(interaction, true);
+      case 'disablehumans':
+        return handleToggleHumans(interaction, false);
+      case 'aidensity':
+        return handleAIDensity(interaction, interaction.options.getNumber('density'));
+      case 'custom':
+        return handleCustom(interaction);
+      default:
+        return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('❌ Error').setDescription('Unknown command').setColor(0xff0000)] });
+    }
+  } catch (error) {
+    console.error(`[Command] ${subcommand} error:`, error);
+    return interaction.editReply({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle('❌ Command Failed')
+          .setDescription(error.message || 'An unexpected error occurred')
+          .setColor(0xff0000),
+      ],
+    });
+  }
+}
+
+function showHelp(interaction) {
+  const embed = new EmbedBuilder()
+    .setTitle('🦖 Evrima RCON Bot - Help')
+    .setDescription('All available slash commands:')
+    .setColor(0x3498db)
+    .addFields(
+      { name: '👥 Player Management', value: '`/evrima playerlist` `/evrima getplayerdata` `/evrima kick` `/evrima ban` `/evrima unban`', inline: false },
+      { name: '📢 Communication', value: '`/evrima announce` `/evrima directmessage`', inline: false },
+      { name: '🖥️ Server', value: '`/evrima save` `/evrima serverdetails` `/evrima queue` `/evrima pause` `/evrima unpause`', inline: false },
+      { name: '🌍 World', value: '`/evrima toggleai` `/evrima togglemigrations` `/evrima togglegrowthmultiplier` `/evrima setgrowthmultiplier` `/evrima wipecorpses` `/evrima aidensity` `/evrima togglehumans`', inline: false },
+      { name: '📋 Whitelist', value: '`/evrima togglewhitelist` `/evrima addwhitelist` `/evrima removewhitelist`', inline: false },
+      { name: '🦕 Playables', value: '`/evrima playables` `/evrima updateplayables`', inline: false },
+      { name: '💻 Custom', value: '`/evrima custom`', inline: false }
+    )
+    .setFooter({ text: 'Evrima RCON Bot' });
+
+  return interaction.reply({ embeds: [embed] });
+}
+
+async function executeRCON(command, params = '') {
+  return rconManager.execute(command, params);
+}
+
+async function handlePlayerList(interaction) {
+  const players = await rconManager.getPlayers();
+  const response = players.map((p) => `${p.id} - ${p.name} (${p.steamId || p.eosId || 'N/A'})`).join('\n') || 'No players online';
+  await logger.log('playerlist', interaction.user, 'Server', `Found ${players.length} players`, true);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('👥 Online Players').setDescription(`Total: ${players.length}\n\`\`\`${response}\`\`\``).setColor(0x3498db)] });
+}
+
+async function handleGetPlayerData(interaction) {
+  const data = await rconManager.client.getPlayerData();
+  const response = JSON.stringify(data, null, 2);
+  await logger.log('getplayerdata', interaction.user, 'Server', response, true);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📋 Player Data').setDescription(`\`\`\`json\n${response.slice(0, 4000)}\`\`\``).setColor(0x3498db)] });
+}
+
+async function handleKickBan(interaction, action) {
+  const player = interaction.options.getString('player');
+  const reason = interaction.options.getString('reason') || 'No reason provided';
+  const params = `${player},${reason}`;
+
+  const embed = new EmbedBuilder()
+    .setTitle(`⚠️ Confirm ${action.toUpperCase()}`)
+    .setDescription(`Are you sure you want to ${action} **${player}**?\nReason: ${reason}`)
+    .setColor(0xffa500);
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`confirm_${action}_${encodeURIComponent(player)}_${encodeURIComponent(reason)}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId(`cancel_${action}`).setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+  );
+
+  return interaction.editReply({ embeds: [embed], components: [row] });
+}
+
+async function handleUnban(interaction) {
+  const steamId = interaction.options.getString('steamid');
+  const result = await executeRCON('unban', steamId);
+  await logger.log('unban', interaction.user, steamId, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('✅ Unban').setDescription(`Unbanned ${steamId}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleAnnounce(interaction) {
+  const message = interaction.options.getString('message');
+  const result = await executeRCON('announce', message);
+  await logger.log('announce', interaction.user, 'All Players', message, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📢 Announcement Sent').setDescription(`Message: ${message}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleDirectMessage(interaction) {
+  const player = interaction.options.getString('player');
+  const message = interaction.options.getString('message');
+  const result = await executeRCON('directmessage', `${player},${message}`);
+  await logger.log('directmessage', interaction.user, player, message, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('💬 Direct Message Sent').setDescription(`To: ${player}\nMessage: ${message}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleSave(interaction) {
+  const result = await executeRCON('save');
+  await logger.log('save', interaction.user, 'Server', result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('💾 Server Saved').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleServerDetails(interaction) {
+  const details = await rconManager.getServerDetails();
+  await logger.log('serverdetails', interaction.user, 'Server', details, true);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('ℹ️ Server Details').setDescription(`\`\`\`${details}\`\`\``).setColor(0x3498db)] });
+}
+
+async function handleQueue(interaction) {
+  const result = await executeRCON('getqueuestatus');
+  await logger.log('queue', interaction.user, 'Server', result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📋 Queue Status').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0x3498db)] });
+}
+
+async function handlePause(interaction, pause) {
+  const result = await executeRCON(pause ? 'pause' : 'unpause');
+  await logger.log(pause ? 'pause' : 'unpause', interaction.user, 'Server', result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle(pause ? '⏸️ Server Paused' : '▶️ Server Unpaused').setDescription(`\`\`\`${result.data}\`\`\``).setColor(pause ? 0xffa500 : 0x00ff00)] });
+}
+
+async function handleToggleAI(interaction, enable) {
+  const result = await executeRCON('toggleai', enable ? '1' : '0');
+  await logger.log('toggleai', interaction.user, `AI ${enable ? 'Enabled' : 'Disabled'}`, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🤖 AI Toggled').setDescription(`AI ${enable ? 'Enabled' : 'Disabled'}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleToggle(interaction, commandName) {
+  const state = interaction.options.getBoolean('state');
+  const result = await executeRCON(commandName, state ? '1' : '0');
+  await logger.log(commandName, interaction.user, `${commandName} ${state ? 'On' : 'Off'}`, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('✅ Toggled').setDescription(`${commandName} ${state ? 'Enabled' : 'Disabled'}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleSetGrowthMultiplier(interaction) {
+  const value = interaction.options.getNumber('value');
+  const result = await executeRCON('setgrowthmultiplier', String(value));
+  await logger.log('setgrowthmultiplier', interaction.user, `Multiplier: ${value}`, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🌱 Growth Multiplier Set').setDescription(`Value: ${value}x\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleWipeCorpses(interaction) {
+  const result = await executeRCON('wipecorpses');
+  await logger.log('wipecorpses', interaction.user, 'All Corpses', result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🗑️ Corpses Wiped').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleToggleWhitelist(interaction, enable) {
+  const result = await executeRCON('togglewhitelist', enable ? '1' : '0');
+  await logger.log('togglewhitelist', interaction.user, `Whitelist ${enable ? 'Enabled' : 'Disabled'}`, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📋 Whitelist Toggled').setDescription(`Whitelist ${enable ? 'Enabled' : 'Disabled'}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleWhitelist(interaction, action) {
+  const playerId = interaction.options.getString('playerid');
+  const command = action === 'addwhitelist' ? 'addwhitelist' : 'removewhitelist';
+  const result = await executeRCON(command, playerId);
+  await logger.log(action, interaction.user, playerId, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📋 Whitelist Updated').setDescription(`${action === 'addwhitelist' ? 'Added' : 'Removed'} ${playerId}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handlePlayables(interaction, action, config) {
+  if (action === 'playables') {
+    const playables = await rconManager.client.getPlayables();
+    const response = JSON.stringify(playables, null, 2);
+    await logger.log('playables', interaction.user, 'Server', response, true);
+    return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🦕 Playable Dinosaurs').setDescription(`\`\`\`json\n${response.slice(0, 4000)}\`\`\``).setColor(0x3498db)] });
+  } else {
+    const result = await executeRCON('updateplayables', config);
+    await logger.log('updateplayables', interaction.user, config, result.data, result.success);
+    return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🦕 Playables Updated').setDescription(`Config: ${config}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+  }
+}
+
+async function handleToggleHumans(interaction, enable) {
+  const result = await executeRCON('togglehumans', enable ? '1' : '0');
+  await logger.log('togglehumans', interaction.user, `Humans ${enable ? 'Enabled' : 'Disabled'}`, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🧑 Humans Toggled').setDescription(`Humans ${enable ? 'Enabled' : 'Disabled'}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleAIDensity(interaction, density) {
+  const result = await executeRCON('aidensity', String(density));
+  await logger.log('aidensity', interaction.user, `Density: ${density}`, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📊 AI Density Set').setDescription(`Density: ${density}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleCustom(interaction) {
+  const command = interaction.options.getString('command');
+  const result = await executeRCON('custom', command);
+  await logger.log('custom', interaction.user, command, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('💻 Custom Command').setDescription(`Command: \`${command}\`\nResponse: \`\`\`${result.data}\`\`\``).setColor(0x3498db)] });
+}
+
+export async function handleButtonInteraction(interaction) {
+  const customId = interaction.customId;
+
+  if (customId.startsWith('confirm_')) {
+    const parts = customId.split('_');
+    const action = parts[1];
+    const player = decodeURIComponent(parts[2]);
+    const reason = decodeURIComponent(parts[3]);
+
+    try {
+      const params = `${player},${reason}`;
+      const result = await rconManager.execute(action, params);
+      await logger.log(action, interaction.user, player, result.data, result.success);
+
+      return interaction.update({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle(`✅ ${action.toUpperCase()} Successful`)
+            .setDescription(`${player} has been ${action}ed.\n\`\`\`${result.data}\`\`\``)
+            .setColor(0x00ff00),
+        ],
+        components: [],
+      });
+    } catch (error) {
+      return interaction.update({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle('❌ Action Failed')
+            .setDescription(error.message)
+            .setColor(0xff0000),
+        ],
+        components: [],
+      });
+    }
+  }
+
+  if (customId.startsWith('cancel_')) {
+    return interaction.update({
+      embeds: [new EmbedBuilder().setTitle('🚫 Cancelled').setDescription('Action cancelled.').setColor(0xffa500)],
+      components: [],
+    });
+  }
+}
