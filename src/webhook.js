@@ -1,18 +1,18 @@
 import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
 import 'dotenv/config';
-
-const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
-});
+import http from 'http';
+import { exec } from 'child_process';
 
 const WEBHOOK_TOKEN = process.env.DEPLOY_WEBHOOK_TOKEN;
 const ALLOWED_USERS = (process.env.DEPLOY_ALLOWED_USERS || '').split(',').filter(Boolean);
 
-if (!WEBHOOK_TOKEN) {
-  console.log('[Webhook] No DEPLOY_WEBHOOK_TOKEN set. Webhook handler disabled.');
-} else {
-  const http = require('http');
-  const PORT = process.env.WEBHOOK_PORT || 3000;
+export function startDeployWebhook(loggerClient) {
+  if (!WEBHOOK_TOKEN) {
+    console.log('[Webhook] No DEPLOY_WEBHOOK_TOKEN set. Webhook handler disabled.');
+    return;
+  }
+
+  const PORT = process.env.WEBHOOK_PORT || 3001;
 
   const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && req.url === `/deploy/${WEBHOOK_TOKEN}`) {
@@ -34,38 +34,13 @@ if (!WEBHOOK_TOKEN) {
 
         console.log('[Webhook] Deploy triggered by user:', userId);
 
-        const { exec } = require('child_process');
         exec('bash deploy.sh', (error, stdout, stderr) => {
           if (error) {
             console.error('[Webhook] Deploy failed:', error);
-            if (process.env.DISCORD_TOKEN && process.env.LOG_CHANNEL_ID) {
-              const channel = await client.channels.fetch(process.env.LOG_CHANNEL_ID);
-              if (channel) {
-                channel.send({
-                  embeds: [
-                    new EmbedBuilder()
-                      .setTitle('❌ Deploy Failed')
-                      .setDescription('```' + stderr.slice(0, 500) + '```')
-                      .setColor(0xff0000),
-                  ],
-                });
-              }
-            }
+            sendDeployLog(loggerClient, '❌ Deploy Failed', '```' + stderr.slice(0, 500) + '```', 0xff0000);
           } else {
             console.log('[Webhook] Deploy successful');
-            if (process.env.DISCORD_TOKEN && process.env.LOG_CHANNEL_ID) {
-              const channel = await client.channels.fetch(process.env.LOG_CHANNEL_ID);
-              if (channel) {
-                channel.send({
-                  embeds: [
-                    new EmbedBuilder()
-                      .setTitle('✅ Deploy Successful')
-                      .setDescription('Bot has been updated and restarted.')
-                      .setColor(0x00ff00),
-                  ],
-                });
-              }
-            }
+            sendDeployLog(loggerClient, '✅ Deploy Successful', 'Bot has been updated and restarted.', 0x00ff00);
           }
         });
 
@@ -87,9 +62,21 @@ if (!WEBHOOK_TOKEN) {
   });
 }
 
-if (process.env.DISCORD_TOKEN) {
-  client.once('ready', () => {
-    console.log(`[Webhook] Logged in as ${client.user.tag}`);
-  });
-  client.login(process.env.DISCORD_TOKEN);
+async function sendDeployLog(client, title, description, color) {
+  if (!client || !process.env.LOG_CHANNEL_ID) return;
+  try {
+    const channel = await client.channels.fetch(process.env.LOG_CHANNEL_ID);
+    if (channel) {
+      await channel.send({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle(title)
+            .setDescription(description)
+            .setColor(color),
+        ],
+      });
+    }
+  } catch (error) {
+    console.error('[Webhook] Failed to send log:', error.message);
+  }
 }
