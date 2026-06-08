@@ -128,11 +128,13 @@ Configure via Discord role IDs in `.env`.
 ## Pterodactyl Deployment
 
 1. Create new Node.js server
-2. Upload bot files
+2. Upload bot files or connect via Git
 3. Set environment variables in Pterodactyl panel
 4. Set startup command: `bash deploy.sh`
 5. Install dependencies: `npm install --production`
 6. **Allocate port 3000** in Pterodactyl (Settings → Networking) for the web terminal
+
+**Note:** The Discord bot runs as the main process. The web terminal shares the same RCON connection and runs on the same server. If you need the web terminal independently, run `node src/web/server.js` separately.
 
 ## Architecture
 
