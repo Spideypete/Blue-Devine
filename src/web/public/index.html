@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evrima RCON Terminal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1a1d23;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: #21252b;
+      border-right: 1px solid #2d333b;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .sidebar h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #58a6ff;
+    }
+
+    .category {
+      margin-bottom: 16px;
+    }
+
+    .category-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #8b949e;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .cmd-btn {
+      display: block;
+      width: 100%;
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      background: #2d333b;
+      border: 1px solid #373e47;
+      color: #e0e0e0;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      border-radius: 4px;
+    }
+
+    .cmd-btn:hover {
+      background: #373e47;
+      border-color: #58a6ff;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+
+    .connection-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .connection-bar input {
+      padding: 8px 12px;
+      background: #21252b;
+      border: 1px solid #373e47;
+      color: #e0e0e0;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .connection-bar input:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    .connection-bar button {
+      padding: 8px 16px;
+      background: #238636;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .connection-bar button.danger {
+      background: #da3633;
+    }
+
+    .terminal {
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid #2d333b;
+      border-radius: 6px;
+      padding: 12px;
+      overflow-y: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .terminal .line {
+      margin-bottom: 2px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .terminal .outgoing { color: #d29922; }
+    .terminal .response { color: #3fb950; }
+    .terminal .error { color: #f85149; }
+    .terminal .info { color: #58a6ff; }
+
+    .command-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .command-bar input {
+      flex: 1;
+      padding: 10px 12px;
+      background: #21252b;
+      border: 1px solid #373e47;
+      color: #e0e0e0;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    .command-bar input:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    .command-bar button {
+      padding: 10px 20px;
+      background: #238636;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #21252b;
+      border: 1px solid #373e47;
+      border-radius: 8px;
+      padding: 20px;
+      min-width: 400px;
+    }
+
+    .modal-content h3 {
+      margin-bottom: 12px;
+      color: #58a6ff;
+    }
+
+    .modal-content label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      color: #8b949e;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 12px;
+      background: #0d1117;
+      border: 1px solid #373e47;
+      color: #e0e0e0;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .modal-content button {
+      padding: 8px 16px;
+      margin-right: 8px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #238636;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #373e47;
+      color: #e0e0e0;
+    }
+
+    .status {
+      font-size: 12px;
+      color: #8b949e;
+      margin-left: auto;
+    }
+
+    .status.connected { color: #3fb950; }
+    .status.disconnected { color: #f85149; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Commands</h2>
+    <div id="commandList"></div>
+  </div>
+
+  <div class="main">
+    <div class="connection-bar">
+      <input type="text" id="host" placeholder="Host (e.g. 127.0.0.1)" value="127.0.0.1">
+      <input type="text" id="port" placeholder="Port (e.g. 8888)" value="8888" style="width: 100px;">
+      <input type="text" id="password" placeholder="RCON Password">
+      <button id="connectBtn" onclick="connect()">Connect</button>
+      <button id="disconnectBtn" class="danger" onclick="disconnect()" style="display:none;">Disconnect</button>
+      <span id="status" class="status disconnected">Disconnected</span>
+    </div>
+
+    <div class="terminal" id="terminal"></div>
+
+    <div class="command-bar">
+      <input type="text" id="commandInput" placeholder="Type command..." disabled>
+      <button id="sendBtn" onclick="sendCommand()" disabled>Send</button>
+    </div>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Command</h3>
+      <div id="modalFields"></div>
+      <button class="btn-primary" onclick="submitModal()">Send</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let connected = false;
+    let currentCommand = null;
+
+    const COMMANDS = [
+      { category: 'Communication', commands: [
+        { name: 'announce', args: ['message'], desc: 'Broadcast message to all players' },
+        { name: 'directmessage', args: ['player', 'message'], desc: 'Send private message (EOS ID, Steam ID, or Name)' },
+        { name: 'toggleglobalchat', args: ['0/1'], desc: 'Disable/Enable global chat' },
+      ]},
+      { category: 'Moderation', commands: [
+        { name: 'ban', args: ['player', 'reason'], desc: 'Ban a player' },
+        { name: 'kick', args: ['player', 'reason'], desc: 'Kick a player' },
+        { name: 'togglewhitelist', args: ['0/1'], desc: 'Disable/Enable whitelist' },
+        { name: 'addwhitelist', args: ['playerId'], desc: 'Add player(s) to whitelist' },
+        { name: 'removewhitelist', args: ['playerId'], desc: 'Remove player(s) from whitelist' },
+      ]},
+      { category: 'Info', commands: [
+        { name: 'playerlist', args: [], desc: 'List all online players' },
+        { name: 'getplayerdata', args: [], desc: 'Get detailed stats per player' },
+        { name: 'serverdetails', args: [], desc: 'Get server configuration' },
+        { name: 'getqueuestatus', args: [], desc: 'Get server queue status' },
+        { name: 'getplayables', args: [], desc: 'Get list of available playable dinosaurs' },
+      ]},
+      { category: 'Server', commands: [
+        { name: 'save', args: ['backupName?'], desc: 'Save game data' },
+        { name: 'pause', args: [], desc: 'Pause the server' },
+        { name: 'custom', args: ['command'], desc: 'Send custom command' },
+        { name: 'togglenetupdatedistancechecks', args: ['0/1'], desc: 'Toggle network update distance checks' },
+      ]},
+      { category: 'World', commands: [
+        { name: 'wipecorpses', args: [], desc: 'Remove all corpses' },
+        { name: 'toggleai', args: ['0/1'], desc: 'Disable/Enable AI spawns' },
+        { name: 'disableaiclasses', args: ['class[,class,...]'], desc: 'Update AI spawn list' },
+        { name: 'aidensity', args: ['0.0-1.0'], desc: 'Set AI spawn density' },
+        { name: 'toggleailearning', args: ['0/1'], desc: 'Toggle AI learning' },
+        { name: 'togglemigrations', args: ['0/1'], desc: 'Toggle dinosaur migrations' },
+      ]},
+      { category: 'Admin', commands: [
+        { name: 'updateplayables', args: ['class:enabled/disabled'], desc: 'Update playable dinosaur classes' },
+        { name: 'togglegrowthmultiplier', args: ['0/1'], desc: 'Toggle growth multiplier' },
+        { name: 'setgrowthmultiplier', args: ['value'], desc: 'Set growth multiplier value' },
+        { name: 'togglehumans', args: ['0/1'], desc: 'Disable/Enable humans' },
+      ]},
+    ];
+
+    function renderCommands() {
+      const container = document.getElementById('commandList');
+      container.innerHTML = '';
+      for (const cat of COMMANDS) {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category';
+        catDiv.innerHTML = `<div class="category-title">${cat.category}</div>`;
+        for (const cmd of cat.commands) {
+          const btn = document.createElement('button');
+          btn.className = 'cmd-btn';
+          btn.textContent = `${cmd.name} ${cmd.args.length ? '(' + cmd.args.join(', ') + ')' : ''}`;
+          btn.title = cmd.desc;
+          btn.onclick = () => openCommandModal(cmd);
+          catDiv.appendChild(btn);
+        }
+        container.appendChild(catDiv);
+      }
+    }
+
+    function openCommandModal(cmd) {
+      currentCommand = cmd;
+      document.getElementById('modalTitle').textContent = cmd.name;
+      const fields = document.getElementById('modalFields');
+      fields.innerHTML = '';
+      if (cmd.args.length === 0) {
+        fields.innerHTML = '<p style="color:#8b949e;">No arguments required.</p>';
+      } else {
+        for (const arg of cmd.args) {
+          const label = document.createElement('label');
+          label.textContent = arg;
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = arg;
+          input.dataset.arg = arg;
+          fields.appendChild(label);
+          fields.appendChild(input);
+        }
+      }
+      document.getElementById('modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      currentCommand = null;
+    }
+
+    function submitModal() {
+      if (!currentCommand) return;
+      const inputs = document.querySelectorAll('#modalFields input');
+      const args = [];
+      for (const input of inputs) {
+        args.push(input.value);
+      }
+      const argStr = args.filter(Boolean).join(',');
+      document.getElementById('commandInput').value = `${currentCommand.name} ${argStr}`.trim();
+      closeModal();
+      sendCommand();
+    }
+
+    function connect() {
+      const host = document.getElementById('host').value;
+      const port = document.getElementById('port').value;
+      const password = document.getElementById('password').value;
+
+      if (!host || !port) {
+        appendLine('Please enter host and port.', 'error');
+        return;
+      }
+
+      ws = new WebSocket(`ws://${location.host}`);
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'connect', data: { host, port, password } }));
+      };
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        handleMessage(msg);
+      };
+      ws.onclose = () => {
+        setConnected(false);
+        appendLine('Disconnected from server.', 'error');
+      };
+      ws.onerror = (err) => {
+        appendLine('WebSocket error.', 'error');
+      };
+    }
+
+    function disconnect() {
+      if (ws) {
+        ws.send(JSON.stringify({ type: 'disconnect' }));
+        ws.close();
+      }
+    }
+
+    function handleMessage(msg) {
+      switch (msg.type) {
+        case 'connected':
+          setConnected(true);
+          appendLine(msg.data, 'info');
+          break;
+        case 'disconnected':
+          setConnected(false);
+          appendLine(msg.data, 'info');
+          break;
+        case 'output':
+          const cls = msg.data.startsWith('>') ? 'outgoing' : msg.data.includes('ERROR') ? 'error' : 'response';
+          appendLine(msg.data, cls);
+          break;
+        case 'error':
+          appendLine(msg.data, 'error');
+          break;
+        case 'commands':
+          // commands loaded
+          break;
+      }
+    }
+
+    function setConnected(state) {
+      connected = state;
+      document.getElementById('status').textContent = state ? 'Connected' : 'Disconnected';
+      document.getElementById('status').className = 'status ' + (state ? 'connected' : 'disconnected');
+      document.getElementById('connectBtn').style.display = state ? 'none' : 'block';
+      document.getElementById('disconnectBtn').style.display = state ? 'block' : 'none';
+      document.getElementById('commandInput').disabled = !state;
+      document.getElementById('sendBtn').disabled = !state;
+    }
+
+    function sendCommand() {
+      const input = document.getElementById('commandInput');
+      const raw = input.value.trim();
+      if (!raw || !connected) return;
+
+      const parts = raw.split(' ');
+      const command = parts[0];
+      const args = parts.slice(1).join(',');
+
+      ws.send(JSON.stringify({ type: 'command', data: { command, args } }));
+      input.value = '';
+    }
+
+    function appendLine(text, cls = '') {
+      const terminal = document.getElementById('terminal');
+      const line = document.createElement('div');
+      line.className = 'line ' + cls;
+      line.textContent = text;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    document.getElementById('commandInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendCommand();
+    });
+
+    renderCommands();
+  </script>
+</body>
+</html>

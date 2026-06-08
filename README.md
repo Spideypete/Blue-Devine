@@ -5,6 +5,7 @@ Production-ready Discord bot for controlling The Isle Evrima servers via RCON. B
 ## Features
 
 - **Slash Commands** - 20+ commands covering all Evrima RCON functionality
+- **Web Terminal** - Browser-based RCON terminal (like xgamingserver.com/tools/the-isle/rcon)
 - **Evrima RCON Protocol** - Custom binary protocol support (not Source RCON)
 - **Persistent Connections** - Reusable RCON connection with auto-reconnect
 - **Role-Based Permissions** - OWNER, ADMIN, MODERATOR, USER tiers
@@ -106,6 +107,13 @@ Restart server after changes. Open port 8888 in firewall.
 ### Custom
 - `/evrima custom` - Send any raw RCON command
 
+### Web Terminal
+- Open `http://your-server-ip:3000` in your browser
+- Enter RCON host, port, and password
+- Click commands in sidebar to auto-fill arguments
+- Type custom commands directly in terminal
+- Timestamped output with color coding (yellow=outgoing, green=response, red=error)
+
 ## Permissions
 
 | Role | Access |
@@ -122,8 +130,9 @@ Configure via Discord role IDs in `.env`.
 1. Create new Node.js server
 2. Upload bot files
 3. Set environment variables in Pterodactyl panel
-4. Set startup command: `node src/index.js`
+4. Set startup command: `bash deploy.sh`
 5. Install dependencies: `npm install --production`
+6. **Allocate port 3000** in Pterodactyl (Settings → Networking) for the web terminal
 
 ## Architecture
 
@@ -137,9 +146,13 @@ src/
 ├── rcon/
 │   ├── client.js         # Evrima binary RCON protocol implementation
 │   └── manager.js        # Connection management wrapper
-└── utils/
-    ├── logger.js         # Audit logging to Discord channel
-    └── rateLimiter.js    # Per-user rate limiting
+├── utils/
+│   ├── logger.js         # Audit logging to Discord channel
+│   └── rateLimiter.js    # Per-user rate limiting
+└── web/
+    ├── server.js         # Express + WebSocket server for web terminal
+    └── public/
+        └── index.html    # Browser-based RCON terminal UI
 ```
 
 ## RCON Protocol
