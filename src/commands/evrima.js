@@ -20,7 +20,6 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((sub) => sub.setName('pause').setDescription('Pause the server'))
   .addSubcommand((sub) => sub.setName('unpause').setDescription('Unpause the server'))
   .addSubcommand((sub) => sub.setName('toggleai').setDescription('Toggle AI on/off').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
-  .addSubcommand((sub) => sub.setName('togglemigrations').setDescription('Toggle migrations').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
   .addSubcommand((sub) => sub.setName('togglegrowthmultiplier').setDescription('Toggle growth multiplier').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
   .addSubcommand((sub) => sub.setName('setgrowthmultiplier').setDescription('Set growth multiplier value').addNumberOption((opt) => opt.setName('value').setDescription('Multiplier value').setRequired(true)))
   .addSubcommand((sub) => sub.setName('wipecorpses').setDescription('Wipe all corpses'))
@@ -99,10 +98,6 @@ export async function execute(interaction) {
         return handlePause(interaction, false);
       case 'toggleai':
         return handleToggleAI(interaction, interaction.options.getBoolean('state'));
-      case 'disableai':
-        return handleToggleAI(interaction, false);
-      case 'togglemigrations':
-        return handleToggle(interaction, 'togglemigrations');
       case 'togglegrowthmultiplier':
         return handleToggle(interaction, 'togglegrowthmultiplier');
       case 'setgrowthmultiplier':
@@ -111,8 +106,6 @@ export async function execute(interaction) {
         return handleWipeCorpses(interaction);
       case 'togglewhitelist':
         return handleToggleWhitelist(interaction, true);
-      case 'disablewhitelist':
-        return handleToggleWhitelist(interaction, false);
       case 'addwhitelist':
         return handleWhitelist(interaction, 'addwhitelist');
       case 'removewhitelist':
@@ -123,8 +116,6 @@ export async function execute(interaction) {
         return handlePlayables(interaction, 'updateplayables', interaction.options.getString('config'));
       case 'togglehumans':
         return handleToggleHumans(interaction, true);
-      case 'disablehumans':
-        return handleToggleHumans(interaction, false);
       case 'aidensity':
         return handleAIDensity(interaction, interaction.options.getNumber('density'));
       case 'custom':
@@ -154,7 +145,7 @@ function showHelp(interaction) {
       { name: '👥 Player Management', value: '`/evrima playerlist` `/evrima getplayerdata` `/evrima kick` `/evrima ban` `/evrima unban`', inline: false },
       { name: '📢 Communication', value: '`/evrima announce` `/evrima directmessage`', inline: false },
       { name: '🖥️ Server', value: '`/evrima save` `/evrima serverdetails` `/evrima queue` `/evrima pause` `/evrima unpause`', inline: false },
-      { name: '🌍 World', value: '`/evrima toggleai` `/evrima togglemigrations` `/evrima togglegrowthmultiplier` `/evrima setgrowthmultiplier` `/evrima wipecorpses` `/evrima aidensity` `/evrima togglehumans`', inline: false },
+      { name: '🌍 World', value: '`/evrima toggleai` `/evrima togglegrowthmultiplier` `/evrima setgrowthmultiplier` `/evrima wipecorpses` `/evrima aidensity` `/evrima togglehumans`', inline: false },
       { name: '📋 Whitelist', value: '`/evrima togglewhitelist` `/evrima addwhitelist` `/evrima removewhitelist`', inline: false },
       { name: '🦕 Playables', value: '`/evrima playables` `/evrima updateplayables`', inline: false },
       { name: '💻 Custom', value: '`/evrima custom`', inline: false }
