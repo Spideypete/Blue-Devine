@@ -20,7 +20,22 @@ if [ ! -f "${ENV_FILE}" ]; then
 fi
 
 echo "📥 Pulling latest code from GitHub..."
+
+# Backup .env if it exists
+if [ -f ".env" ]; then
+    cp .env .env.backup
+fi
+
+# Reset any local changes and pull latest
+git reset --hard
+git clean -fd
 git pull origin main
+
+# Restore .env
+if [ -f ".env.backup" ]; then
+    mv .env.backup .env
+fi
+
 echo "✅ Code updated"
 echo ""
 
