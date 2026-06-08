@@ -29,6 +29,13 @@
     .subtitle {
       color: #8b949e;
       font-size: 14px;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .info-text {
+      color: #8b949e;
+      font-size: 14px;
       margin-bottom: 24px;
       line-height: 1.5;
     }
@@ -142,45 +149,6 @@
     }
 
     .cmd-link:hover {
-      color: #58a6ff;
-      border-bottom-color: #58a6ff;
-    }
-
-    .cmd-link {
-      color: #c9d1d9;
-      font-size: 13px;
-      font-family: inherit;
-      text-decoration: none;
-      cursor: pointer;
-      border-bottom: 1px solid transparent;
-      transition: color 0.1s, border-color 0.1s;
-      display: inline;
-      padding: 0;
-      margin: 0;
-      line-height: inherit;
-    }
-
-    .cmd-link:hover {
-      color: #58a6ff;
-      border-bottom-color: #58a6ff;
-    }
-
-    .cmd-btn {
-      background: none;
-      border: none;
-      color: #c9d1d9;
-      cursor: pointer;
-      font-size: 13px;
-      font-family: inherit;
-      padding: 0;
-      margin: 0;
-      display: inline;
-      line-height: inherit;
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-    }
-
-    .cmd-btn:hover {
       color: #58a6ff;
       border-bottom-color: #58a6ff;
     }
@@ -299,6 +267,73 @@
       background: #30363d;
       color: #8b949e;
       cursor: not-allowed;
+    }
+
+    .info-section, .faq-section, .related-section {
+      margin-bottom: 32px;
+    }
+
+    .info-section h2, .faq-section h2, .related-section h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #f0f6fc;
+    }
+
+    .info-section p, .faq-section p, .related-section p {
+      color: #c9d1d9;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .faq-item {
+      margin-bottom: 16px;
+    }
+
+    .faq-item h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 6px;
+    }
+
+    .faq-item p {
+      color: #c9d1d9;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .related-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .related-card:hover {
+      border-color: #58a6ff;
+    }
+
+    .related-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 4px;
+    }
+
+    .related-card p {
+      font-size: 12px;
+      color: #8b949e;
+      line-height: 1.4;
     }
 
     .modal {
@@ -420,6 +455,8 @@
     <h1>The Isle RCON Terminal</h1>
     <p class="subtitle">Live browser RCON client for The Isle Evrima dedicated servers. Connect with your server's IP, RCON port, and password. Run any of the 27 admin commands — playerlist, announce, kick, ban, save, AI toggle, whitelist — and see the server's response in real time.</p>
 
+    <p class="info-text">Commands execute instantly on your live server. RCON must be enabled in <code>Game.ini</code> (<code>bRconEnabled=True</code>). Connection details are saved in your browser's localStorage for convenience — use a dedicated RCON password, not one shared with other services.</p>
+
     <div class="connection-section">
       <h2>Server Connection</h2>
       <div class="connection-fields">
@@ -450,6 +487,69 @@
     <div class="command-bar">
       <input type="text" id="commandInput" placeholder="Type command..." disabled>
       <button id="sendBtn" onclick="sendCommand()" disabled>Send Command</button>
+    </div>
+
+    <div class="info-section">
+      <h2>Run RCON commands on your Isle Evrima server from the browser</h2>
+      <p>The Isle Evrima uses a custom binary RCON protocol — not the standard Source RCON that most games use. That means generic RCON clients (mcrcon, rcon-cli, Rusty) won't connect; you need a client that speaks Evrima's protocol: an auth packet of <code>0x01 + password + NUL</code> followed by command packets of <code>0x02 + opcode_byte + params + NUL</code>. This terminal handles all of that — enter your host, RCON port (default 8888), and password, hit Connect, and you're in.</p>
+      <p>Every one of the 27 documented Evrima admin commands is in the sidebar, grouped by category. Click a command to load its parameter form — multi-argument commands like <code>ban</code> (Name, SteamID64, Reason, Duration) and <code>directmessage</code> (SteamID64, message) break each argument into its own labeled field so you don't have to remember the comma-separated order. Commands with no arguments (save, wipecorpses, toggleai, playerlist) have a one-click Send with no form to fill out.</p>
+      <p>The terminal output panel timestamps every command sent and response received. Yellow lines are outgoing commands; green lines are server responses; red lines are errors (bad password, TCP timeout, firewall block). The connection test button pings <code>serverdetails</code> first — a safe read-only command — so you know authentication works before sending any destructive commands.</p>
+      <p>Each send creates a fresh TCP connection through the xtools API (browser → HTTPS → xtools server → TCP → your game server). This is intentional: stateless connections are simpler to reason about, don't break on server-side timeouts, and avoid the connection-management complexity of a persistent WebSocket. Latency is ~100-300ms per command — acceptable for admin tasks.</p>
+      <p>For the full command reference with opcodes, exact argument formats, and examples, see the <a href="/tools/the-isle/rcon-commands" style="color:#58a6ff">RCON Command Reference</a>. To enable RCON on your server in the first place, use the <a href="/tools/the-isle/server-config" style="color:#58a6ff">Server Config Generator</a> — set bRconEnabled=True, RconPort, and a strong RconPassword in Game.ini, then restart the server and open the firewall on that port.</p>
+    </div>
+
+    <div class="faq-section">
+      <h2>The Isle RCON Terminal — FAQ</h2>
+      <div class="faq-item">
+        <h3>Do I need to install anything to use this RCON terminal?</h3>
+        <p>No — it runs entirely in your browser. The xtools server makes the TCP connection to your game server on your behalf, so you don't need Bun, Node, or any RCON client installed. You need: (1) RCON enabled in your Game.ini (bRconEnabled=True), (2) the RCON port open in your firewall, (3) your server's IP + RCON port + RconPassword.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Is my RCON password safe?</h3>
+        <p>Your password is sent over HTTPS from your browser to the xtools API, then from the xtools server over a direct TCP connection to your game server. It is not stored or logged. Use a dedicated RCON password — not your server's admin password or any reused password — so if it were ever intercepted it couldn't be used elsewhere.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Why can't I connect? I get a TCP error.</h3>
+        <p>Most common causes: (1) RCON is not enabled — confirm bRconEnabled=True in Game.ini under [/Script/TheIsle.TIGameSession]. (2) Wrong port — check RconPort in Game.ini (default 8888). (3) Port not open in your firewall — the RCON port is separate from the game port; it needs its own inbound TCP rule. (4) Server hasn't restarted since you edited Game.ini — changes only take effect after a full restart.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What's the difference between this and the RCON Commands reference?</h3>
+        <p>The RCON Commands reference (/tools/the-isle/rcon-commands) is a static lookup — all 27 commands with syntax, opcodes, and examples, no connection required. This RCON Terminal is a live client — it connects to your actual server and executes commands. Use the reference to look up syntax, then use the terminal to send the command.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Why does Evrima use a different RCON protocol than other games?</h3>
+        <p>Most games use Valve's Source RCON — a well-documented TCP protocol with length-prefixed UTF-8 packets. Evrima uses a custom binary protocol: auth is 0x01 + password + NUL, commands are 0x02 + a single opcode byte + params + NUL. It's simpler but means standard RCON clients (mcrcon, rcon-cli) don't work with Evrima. The open-source evrima.rcon library (github.com/smultar-dev/evrima.rcon) documents the full spec.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Some commands return no response — is that normal?</h3>
+        <p>Yes. Commands like save, wipecorpses, toggleai, toggleglobalchat, and the toggle commands don't return a payload — the server just acts on them silently. The terminal will show '(command sent — no response body)' after a 3-second wait and that is expected. Commands that do return data (playerlist, serverdetails, getplayerdata, getqueuestatus) will show the server's JSON or text response.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I run commands automatically or on a schedule?</h3>
+        <p>Not from this browser tool — it's a one-command-at-a-time interface. For automated RCON tasks (timed announcements, scheduled saves, auto-kick on inactivity), use a server-side script with the evrima.rcon Bun library or a tool like Evrima Server Manager running alongside your server process.</p>
+      </div>
+    </div>
+
+    <div class="related-section">
+      <h2>You might also need</h2>
+      <div class="related-grid">
+        <div class="related-card">
+          <h4>Dinosaur Database</h4>
+          <p>All 27 playable dinosaurs in The Isle — HP, damage, speed, growth time, ambush speed, bleed damage, sprint duration</p>
+        </div>
+        <div class="related-card">
+          <h4>Growth Time Calculator</h4>
+          <p>Calculate exact growth time for any of the 18 Evrima dinos from hatchling to adult. Adjust GrowthMultiplier (0.5×-10×), start from any stage, see ETA clock time per stage. Food guide per stage included.</p>
+        </div>
+        <div class="related-card">
+          <h4>Dinosaur Stats Guide</h4>
+          <p>Compare stats, speed, damage, and abilities for all playable dinos</p>
+        </div>
+        <div class="related-card">
+          <h4>Server Config Generator</h4>
+          <p>Complete Game.ini + Engine.ini generator for The Isle Evrima v0.21.x. 31 fields across Identity, Queue, Gameplay, AI, RCON, Admin, Allowed Classes (18 dinos), and EOS. Four presets: Vanilla PvP, Hardcore, Roleplay, Beginner-friendly.</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -525,42 +625,6 @@
       if (host) document.getElementById('host').value = host;
       if (port) document.getElementById('port').value = port;
       if (password) document.getElementById('password').value = password;
-    }
-
-    function renderCommands() {
-      const container = document.getElementById('commandList');
-      container.innerHTML = '';
-      for (const cat of COMMANDS) {
-        const catDiv = document.createElement('div');
-        catDiv.className = 'cmd-category';
-        
-        const title = document.createElement('h3');
-        title.textContent = cat.category;
-        catDiv.appendChild(title);
-        
-        const listDiv = document.createElement('div');
-        listDiv.className = 'cmd-list';
-        
-        for (let i = 0; i < cat.commands.length; i++) {
-          const cmd = cat.commands[i];
-          const a = document.createElement('a');
-          a.className = 'cmd-link';
-          a.textContent = cmd.name;
-          a.title = cmd.desc;
-          a.href = '#';
-          a.onclick = (e) => { e.preventDefault(); openCommandModal(cmd); };
-          listDiv.appendChild(a);
-        }
-        
-        catDiv.appendChild(listDiv);
-        container.appendChild(catDiv);
-      }
-    }
-        }
-        
-        catDiv.appendChild(listDiv);
-        container.appendChild(catDiv);
-      }
     }
 
     function openCommandModal(cmd) {
@@ -716,7 +780,6 @@
     });
 
     loadConnection();
-    renderCommands();
   </script>
 </body>
 </html>
