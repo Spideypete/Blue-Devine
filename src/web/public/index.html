@@ -121,7 +121,27 @@
     }
 
     .cmd-list {
-      line-height: 1.8;
+      line-height: 2;
+      margin-bottom: 4px;
+    }
+
+    .cmd-link {
+      color: #c9d1d9;
+      font-size: 13px;
+      font-family: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      border-bottom: 1px solid transparent;
+      transition: color 0.1s, border-color 0.1s;
+      display: inline;
+      padding: 0;
+      margin: 0;
+      line-height: inherit;
+    }
+
+    .cmd-link:hover {
+      color: #58a6ff;
+      border-bottom-color: #58a6ff;
     }
 
     .cmd-btn {
@@ -135,62 +155,13 @@
       margin: 0;
       display: inline;
       line-height: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
     }
 
     .cmd-btn:hover {
       color: #58a6ff;
-      text-decoration: underline;
-    }
-
-    .cmd-category h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: #f0f6fc;
-      margin-bottom: 6px;
-    }
-
-    .cmd-list {
-      line-height: 1.6;
-    }
-
-    .cmd-btn {
-      background: none;
-      border: none;
-      color: #c9d1d9;
-      cursor: pointer;
-      font-size: 13px;
-      font-family: inherit;
-      padding: 0;
-      margin: 0;
-      display: inline;
-      line-height: inherit;
-    }
-
-    .cmd-btn:hover {
-      color: #58a6ff;
-      text-decoration: underline;
-    }
-
-    .cmd-btn {
-      background: none;
-      border: none;
-      color: #c9d1d9;
-      cursor: pointer;
-      font-size: 13px;
-      font-family: inherit;
-      padding: 0;
-      margin-right: 4px;
-    }
-
-    .cmd-btn:hover {
-      color: #58a6ff;
-      text-decoration: underline;
-    }
-
-    .cmd-separator {
-      color: #8b949e;
-      margin: 0 2px;
-      font-size: 13px;
+      border-bottom-color: #58a6ff;
     }
 
     .terminal-section {
@@ -551,16 +522,13 @@
         
         for (let i = 0; i < cat.commands.length; i++) {
           const cmd = cat.commands[i];
-          const btn = document.createElement('button');
-          btn.className = 'cmd-btn';
-          btn.textContent = cmd.name;
-          btn.title = cmd.desc;
-          btn.onclick = () => openCommandModal(cmd);
-          listDiv.appendChild(btn);
-          
-          if (i < cat.commands.length - 1) {
-            listDiv.appendChild(document.createTextNode(' '));
-          }
+          const a = document.createElement('a');
+          a.className = 'cmd-link';
+          a.textContent = cmd.name;
+          a.title = cmd.desc;
+          a.href = '#';
+          a.onclick = (e) => { e.preventDefault(); openCommandModal(cmd); };
+          listDiv.appendChild(a);
         }
         
         catDiv.appendChild(listDiv);
