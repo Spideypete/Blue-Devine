@@ -1,0 +1,16 @@
+{
+  "discord": {
+    "token": "YOUR_DISCORD_BOT_TOKEN",
+    "clientId": "YOUR_BOT_CLIENT_ID",
+    "guildId": "YOUR_GUILD_ID",
+    "auditChannelId": "YOUR_AUDIT_LOG_CHANNEL_ID"
+  },
+  "rcon": {
+    "host": "127.0.0.1",
+    "port": 27015,
+    "password": "YOUR_RCON_PASSWORD"
+  },
+  "authorizedRoles": ["YOUR_ADMIN_ROLE_ID", "YOUR_MOD_ROLE_ID"],
+  "autoAnnouncements": [],
+  "favoriteCommands": []
+}

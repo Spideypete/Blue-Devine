@@ -1,0 +1,14 @@
+{
+  "name": "evrima-control-center",
+  "version": "1.0.0",
+  "description": "Discord-based control panel for The Isle Evrima servers using RCON",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "rcon-client": "^4.2.4"
+  }
+}
