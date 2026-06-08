@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, StringSelectMenuBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { hasPermission, getUserRole } from '../permissions/roles.js';
 import rconManager from '../rcon/manager.js';
 import { logger } from '../utils/logger.js';
@@ -32,6 +32,8 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((sub) => sub.setName('togglehumans').setDescription('Toggle humans on/off').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
   .addSubcommand((sub) => sub.setName('aidensity').setDescription('Set AI density').addNumberOption((opt) => opt.setName('density').setDescription('Density 0.0-1.0').setRequired(true)))
   .addSubcommand((sub) => sub.setName('custom').setDescription('Send custom RCON command').addStringOption((opt) => opt.setName('command').setDescription('Full RCON command').setRequired(true)));
+
+export const evrimaCommand = { data, execute };
 
 export async function execute(interaction) {
   const subcommand = interaction.options.getSubcommand();
@@ -76,9 +78,9 @@ export async function execute(interaction) {
       case 'getplayerdata':
         return handleGetPlayerData(interaction);
       case 'kick':
-        return handleKickBan(interaction, subcommand);
+        return handleKickBan(interaction, 'kick');
       case 'ban':
-        return handleKickBan(interaction, subcommand);
+        return handleKickBan(interaction, 'ban');
       case 'unban':
         return handleUnban(interaction);
       case 'announce':
