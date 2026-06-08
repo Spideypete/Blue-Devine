@@ -1,5 +1,6 @@
 #!/bin/bash
-# Pterodactyl deployment script for Evrima RCON Bot + Web Terminal
+# Pterodactyl deployment script for Evrima RCON Bot
+# Handles local changes, .env preservation, and auto-start
 
 set -e
 
@@ -13,27 +14,26 @@ echo ""
 
 cd "${BOT_DIR}"
 
-if [ ! -f "${ENV_FILE}" ]; then
-    echo "⚠️  WARNING: .env file not found!"
-    echo "   Please create .env from .env.example before starting."
-    echo ""
+# Backup .env before any git operations
+if [ -f "${ENV_FILE}" ]; then
+    echo "💾 Backing up .env..."
+    cp "${ENV_FILE}" "${ENV_FILE}.backup"
 fi
 
-echo "📥 Pulling latest code from GitHub..."
+echo "📥 Resetting to latest GitHub code..."
 
-# Backup .env if it exists
-if [ -f ".env" ]; then
-    cp .env .env.backup
-fi
+# Stash any local changes (including untracked)
+git stash --include-untracked --force 2>/dev/null || true
 
-# Force reset to remote and pull
+# Fetch latest and hard reset
 git fetch origin
 git reset --hard origin/main
 git clean -fd
 
 # Restore .env
-if [ -f ".env.backup" ]; then
-    mv .env.backup .env
+if [ -f "${ENV_FILE}.backup" ]; then
+    echo "♻️  Restoring .env..."
+    mv "${ENV_FILE}.backup" "${ENV_FILE}"
 fi
 
 echo "✅ Code updated"
@@ -44,24 +44,5 @@ npm install --production --omit=dev
 echo "✅ Dependencies installed"
 echo ""
 
-echo "🌐 Starting web terminal..."
-node src/web/server.js &
-WEB_PID=$!
-
-echo "🤖 Starting Discord bot..."
-npm start &
-BOT_PID=$!
-
-cleanup() {
-    echo ""
-    echo "[Shutdown] Stopping services..."
-    kill $WEB_PID 2>/dev/null || true
-    kill $BOT_PID 2>/dev/null || true
-    wait
-    echo "[Shutdown] Done"
-    exit 0
-}
-
-trap cleanup SIGINT SIGTERM
-
-wait
+echo "🚀 Starting bot..."
+npm start
