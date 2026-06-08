@@ -29,13 +29,13 @@ npm install --production --omit=dev
 echo "✅ Dependencies installed"
 echo ""
 
-echo "🔧 Installing PM2 globally..."
-npm install -g pm2
+echo "🔧 Installing PM2 locally..."
+npm install pm2 --save-dev --omit=dev
 echo "✅ PM2 ready"
 echo ""
 
 echo "🚀 Starting bot + web terminal with PM2..."
-pm2 start ecosystem.config.js --env production
+npx pm2 start ecosystem.config.js --env production
 
 echo "📊 PM2 status:"
 pm2 list
