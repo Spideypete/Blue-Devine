@@ -8,27 +8,29 @@ export const data = new SlashCommandBuilder()
   .setDescription('Evrima Server Control Panel')
   .addSubcommand((sub) => sub.setName('help').setDescription('Show available commands'))
   .addSubcommand((sub) => sub.setName('playerlist').setDescription('List all online players'))
-  .addSubcommand((sub) => sub.setName('getplayerdata').setDescription('Get detailed player data'))
-  .addSubcommand((sub) => sub.setName('kick').setDescription('Kick a player').addStringOption((opt) => opt.setName('player').setDescription('Player name or Steam ID').setRequired(true)).addStringOption((opt) => opt.setName('reason').setDescription('Kick reason').setRequired(false)))
-  .addSubcommand((sub) => sub.setName('ban').setDescription('Ban a player').addStringOption((opt) => opt.setName('player').setDescription('Player name or Steam ID').setRequired(true)).addStringOption((opt) => opt.setName('reason').setDescription('Ban reason').setRequired(false)))
+  .addSubcommand((sub) => sub.setName('getplayerdata').setDescription('Get detailed player data').addStringOption((opt) => opt.setName('steamid').setDescription('Steam ID (optional)').setRequired(false)))
+  .addSubcommand((sub) => sub.setName('kick').setDescription('Kick a player').addStringOption((opt) => opt.setName('player').setDescription('Steam ID or Name').setRequired(true)).addStringOption((opt) => opt.setName('reason').setDescription('Kick reason').setRequired(false)))
+  .addSubcommand((sub) => sub.setName('ban').setDescription('Ban a player').addStringOption((opt) => opt.setName('player').setDescription('Name or Steam ID').setRequired(true)).addStringOption((opt) => opt.setName('reason').setDescription('Ban reason').setRequired(false)))
   .addSubcommand((sub) => sub.setName('unban').setDescription('Unban a player').addStringOption((opt) => opt.setName('steamid').setDescription('Steam ID to unban').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('slay').setDescription('Kill a player instantly').addStringOption((opt) => opt.setName('steamid').setDescription('Steam ID').setRequired(true)))
   .addSubcommand((sub) => sub.setName('announce').setDescription('Send announcement').addStringOption((opt) => opt.setName('message').setDescription('Announcement message').setRequired(true)))
-  .addSubcommand((sub) => sub.setName('directmessage').setDescription('Send direct message to player').addStringOption((opt) => opt.setName('player').setDescription('Player name or Steam ID').setRequired(true)).addStringOption((opt) => opt.setName('message').setDescription('Message content').setRequired(true)))
-  .addSubcommand((sub) => sub.setName('save').setDescription('Save the server'))
+  .addSubcommand((sub) => sub.setName('directmessage').setDescription('Send direct message to player').addStringOption((opt) => opt.setName('player').setDescription('Steam ID or Name').setRequired(true)).addStringOption((opt) => opt.setName('message').setDescription('Message content').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('save').setDescription('Save the server').addStringOption((opt) => opt.setName('backup').setDescription('Optional backup name').setRequired(false)))
   .addSubcommand((sub) => sub.setName('serverdetails').setDescription('Get server details'))
   .addSubcommand((sub) => sub.setName('queue').setDescription('Get queue status'))
-  .addSubcommand((sub) => sub.setName('pause').setDescription('Pause the server'))
-  .addSubcommand((sub) => sub.setName('unpause').setDescription('Unpause the server'))
-  .addSubcommand((sub) => sub.setName('toggleai').setDescription('Toggle AI on/off').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
-  .addSubcommand((sub) => sub.setName('togglegrowthmultiplier').setDescription('Toggle growth multiplier').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('pause').setDescription('Toggle server pause'))
+  .addSubcommand((sub) => sub.setName('toggleglobalchat').setDescription('Toggle global chat'))
+  .addSubcommand((sub) => sub.setName('toggleai').setDescription('Toggle AI on/off'))
+  .addSubcommand((sub) => sub.setName('togglemigrations').setDescription('Toggle migrations'))
+  .addSubcommand((sub) => sub.setName('togglegrowthmultiplier').setDescription('Toggle growth multiplier'))
   .addSubcommand((sub) => sub.setName('setgrowthmultiplier').setDescription('Set growth multiplier value').addNumberOption((opt) => opt.setName('value').setDescription('Multiplier value').setRequired(true)))
   .addSubcommand((sub) => sub.setName('wipecorpses').setDescription('Wipe all corpses'))
-  .addSubcommand((sub) => sub.setName('togglewhitelist').setDescription('Enable whitelist').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
-  .addSubcommand((sub) => sub.setName('addwhitelist').setDescription('Add player to whitelist').addStringOption((opt) => opt.setName('playerid').setDescription('Steam ID or EOS ID').setRequired(true)))
-  .addSubcommand((sub) => sub.setName('removewhitelist').setDescription('Remove player from whitelist').addStringOption((opt) => opt.setName('playerid').setDescription('Steam ID or EOS ID').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('togglewhitelist').setDescription('Toggle whitelist'))
+  .addSubcommand((sub) => sub.setName('addwhitelist').setDescription('Add player to whitelist').addStringOption((opt) => opt.setName('playerid').setDescription('Steam ID').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('removewhitelist').setDescription('Remove player from whitelist').addStringOption((opt) => opt.setName('playerid').setDescription('Steam ID').setRequired(true)))
   .addSubcommand((sub) => sub.setName('playables').setDescription('Get playable dinosaurs list'))
-  .addSubcommand((sub) => sub.setName('updateplayables').setDescription('Update playable dinosaurs').addStringOption((opt) => opt.setName('config').setDescription('Format: Class:enabled,Class:disabled').setRequired(true)))
-  .addSubcommand((sub) => sub.setName('togglehumans').setDescription('Toggle humans on/off').addBooleanOption((opt) => opt.setName('state').setDescription('Enable (true) or disable (false)').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('updateplayables').setDescription('Update playable dinosaurs').addStringOption((opt) => opt.setName('config').setDescription('Comma-separated dino classes').setRequired(true)))
+  .addSubcommand((sub) => sub.setName('togglehumans').setDescription('Toggle humans on/off'))
   .addSubcommand((sub) => sub.setName('aidensity').setDescription('Set AI density').addNumberOption((opt) => opt.setName('density').setDescription('Density 0.0-1.0').setRequired(true)))
   .addSubcommand((sub) => sub.setName('custom').setDescription('Send custom RCON command').addStringOption((opt) => opt.setName('command').setDescription('Full RCON command').setRequired(true)));
 
@@ -77,11 +79,13 @@ export async function execute(interaction) {
       case 'getplayerdata':
         return handleGetPlayerData(interaction);
       case 'kick':
-        return handleKickBan(interaction, 'kick');
+        return handleKick(interaction);
       case 'ban':
-        return handleKickBan(interaction, 'ban');
+        return handleBan(interaction);
       case 'unban':
         return handleUnban(interaction);
+      case 'slay':
+        return handleSlay(interaction);
       case 'announce':
         return handleAnnounce(interaction);
       case 'directmessage':
@@ -93,11 +97,13 @@ export async function execute(interaction) {
       case 'queue':
         return handleQueue(interaction);
       case 'pause':
-        return handlePause(interaction, true);
-      case 'unpause':
-        return handlePause(interaction, false);
+        return handlePause(interaction);
+      case 'toggleglobalchat':
+        return handleToggle(interaction, 'toggleglobalchat');
       case 'toggleai':
-        return handleToggleAI(interaction, interaction.options.getBoolean('state'));
+        return handleToggle(interaction, 'toggleai');
+      case 'togglemigrations':
+        return handleToggle(interaction, 'togglemigrations');
       case 'togglegrowthmultiplier':
         return handleToggle(interaction, 'togglegrowthmultiplier');
       case 'setgrowthmultiplier':
@@ -105,7 +111,7 @@ export async function execute(interaction) {
       case 'wipecorpses':
         return handleWipeCorpses(interaction);
       case 'togglewhitelist':
-        return handleToggleWhitelist(interaction, true);
+        return handleToggleWhitelist(interaction);
       case 'addwhitelist':
         return handleWhitelist(interaction, 'addwhitelist');
       case 'removewhitelist':
@@ -115,7 +121,7 @@ export async function execute(interaction) {
       case 'updateplayables':
         return handlePlayables(interaction, 'updateplayables', interaction.options.getString('config'));
       case 'togglehumans':
-        return handleToggleHumans(interaction, true);
+        return handleToggleHumans(interaction);
       case 'aidensity':
         return handleAIDensity(interaction, interaction.options.getNumber('density'));
       case 'custom':
@@ -142,10 +148,10 @@ function showHelp(interaction) {
     .setDescription('All available slash commands:')
     .setColor(0x3498db)
     .addFields(
-      { name: '👥 Player Management', value: '`/evrima playerlist` `/evrima getplayerdata` `/evrima kick` `/evrima ban` `/evrima unban`', inline: false },
-      { name: '📢 Communication', value: '`/evrima announce` `/evrima directmessage`', inline: false },
-      { name: '🖥️ Server', value: '`/evrima save` `/evrima serverdetails` `/evrima queue` `/evrima pause` `/evrima unpause`', inline: false },
-      { name: '🌍 World', value: '`/evrima toggleai` `/evrima togglegrowthmultiplier` `/evrima setgrowthmultiplier` `/evrima wipecorpses` `/evrima aidensity` `/evrima togglehumans`', inline: false },
+      { name: '👥 Player Management', value: '`/evrima playerlist` `/evrima getplayerdata` `/evrima kick` `/evrima ban` `/evrima unban` `/evrima slay`', inline: false },
+      { name: '📢 Communication', value: '`/evrima announce` `/evrima directmessage` `/evrima toggleglobalchat`', inline: false },
+      { name: '🖥️ Server', value: '`/evrima save` `/evrima serverdetails` `/evrima queue` `/evrima pause`', inline: false },
+      { name: '🌍 World', value: '`/evrima toggleai` `/evrima togglemigrations` `/evrima togglegrowthmultiplier` `/evrima setgrowthmultiplier` `/evrima wipecorpses` `/evrima aidensity` `/evrima togglehumans`', inline: false },
       { name: '📋 Whitelist', value: '`/evrima togglewhitelist` `/evrima addwhitelist` `/evrima removewhitelist`', inline: false },
       { name: '🦕 Playables', value: '`/evrima playables` `/evrima updateplayables`', inline: false },
       { name: '💻 Custom', value: '`/evrima custom`', inline: false }
@@ -167,25 +173,42 @@ async function handlePlayerList(interaction) {
 }
 
 async function handleGetPlayerData(interaction) {
-  const data = await rconManager.client.getPlayerData();
-  const response = JSON.stringify(data, null, 2);
-  await logger.log('getplayerdata', interaction.user, 'Server', response, true);
+  const steamId = interaction.options.getString('steamid') || '';
+  const result = await executeRCON('getplayerdata', steamId);
+  const response = JSON.stringify(result.data, null, 2);
+  await logger.log('getplayerdata', interaction.user, steamId || 'All', response, true);
   return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📋 Player Data').setDescription(`\`\`\`json\n${response.slice(0, 4000)}\`\`\``).setColor(0x3498db)] });
 }
 
-async function handleKickBan(interaction, action) {
+async function handleKick(interaction) {
   const player = interaction.options.getString('player');
   const reason = interaction.options.getString('reason') || 'No reason provided';
-  const params = `${player},${reason}`;
 
   const embed = new EmbedBuilder()
-    .setTitle(`⚠️ Confirm ${action.toUpperCase()}`)
-    .setDescription(`Are you sure you want to ${action} **${player}**?\nReason: ${reason}`)
+    .setTitle('⚠️ Confirm KICK')
+    .setDescription(`Are you sure you want to kick **${player}**?\nReason: ${reason}`)
     .setColor(0xffa500);
 
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`confirm_${action}_${encodeURIComponent(player)}_${encodeURIComponent(reason)}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId(`cancel_${action}`).setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId(`confirm_kick_${encodeURIComponent(player)}_${encodeURIComponent(reason)}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId(`cancel_kick`).setLabel('Cancel').setStyle(ButtonStyle.Secondary)
+  );
+
+  return interaction.editReply({ embeds: [embed], components: [row] });
+}
+
+async function handleBan(interaction) {
+  const name = interaction.options.getString('player');
+  const reason = interaction.options.getString('reason') || 'No reason provided';
+
+  const embed = new EmbedBuilder()
+    .setTitle('⚠️ Confirm BAN')
+    .setDescription(`Are you sure you want to ban **${name}**?\nReason: ${reason}`)
+    .setColor(0xffa500);
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`confirm_ban_${encodeURIComponent(name)}_${encodeURIComponent(reason)}`).setLabel('Confirm').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId(`cancel_ban`).setLabel('Cancel').setStyle(ButtonStyle.Secondary)
   );
 
   return interaction.editReply({ embeds: [embed], components: [row] });
@@ -196,6 +219,13 @@ async function handleUnban(interaction) {
   const result = await executeRCON('unban', steamId);
   await logger.log('unban', interaction.user, steamId, result.data, result.success);
   return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('✅ Unban').setDescription(`Unbanned ${steamId}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+}
+
+async function handleSlay(interaction) {
+  const steamId = interaction.options.getString('steamid');
+  const result = await executeRCON('slay', steamId);
+  await logger.log('slay', interaction.user, steamId, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('⚔️ Player Slain').setDescription(`Slayed ${steamId}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
 }
 
 async function handleAnnounce(interaction) {
@@ -214,8 +244,9 @@ async function handleDirectMessage(interaction) {
 }
 
 async function handleSave(interaction) {
-  const result = await executeRCON('save');
-  await logger.log('save', interaction.user, 'Server', result.data, result.success);
+  const backup = interaction.options.getString('backup') || '';
+  const result = await executeRCON('save', backup);
+  await logger.log('save', interaction.user, backup || 'Server', result.data, result.success);
   return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('💾 Server Saved').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
 }
 
@@ -231,23 +262,16 @@ async function handleQueue(interaction) {
   return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📋 Queue Status').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0x3498db)] });
 }
 
-async function handlePause(interaction, pause) {
-  const result = await executeRCON(pause ? 'pause' : 'unpause');
-  await logger.log(pause ? 'pause' : 'unpause', interaction.user, 'Server', result.data, result.success);
-  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle(pause ? '⏸️ Server Paused' : '▶️ Server Unpaused').setDescription(`\`\`\`${result.data}\`\`\``).setColor(pause ? 0xffa500 : 0x00ff00)] });
-}
-
-async function handleToggleAI(interaction, enable) {
-  const result = await executeRCON('toggleai', enable ? '1' : '0');
-  await logger.log('toggleai', interaction.user, `AI ${enable ? 'Enabled' : 'Disabled'}`, result.data, result.success);
-  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🤖 AI Toggled').setDescription(`AI ${enable ? 'Enabled' : 'Disabled'}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+async function handlePause(interaction) {
+  const result = await executeRCON('pause');
+  await logger.log('pause', interaction.user, 'Server', result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('⏸️ Server Pause Toggled').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0xffa500)] });
 }
 
 async function handleToggle(interaction, commandName) {
-  const state = interaction.options.getBoolean('state');
-  const result = await executeRCON(commandName, state ? '1' : '0');
-  await logger.log(commandName, interaction.user, `${commandName} ${state ? 'On' : 'Off'}`, result.data, result.success);
-  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('✅ Toggled').setDescription(`${commandName} ${state ? 'Enabled' : 'Disabled'}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+  const result = await executeRCON(commandName);
+  await logger.log(commandName, interaction.user, commandName, result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('✅ Toggled').setDescription(`${commandName}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
 }
 
 async function handleSetGrowthMultiplier(interaction) {
@@ -263,10 +287,10 @@ async function handleWipeCorpses(interaction) {
   return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🗑️ Corpses Wiped').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
 }
 
-async function handleToggleWhitelist(interaction, enable) {
-  const result = await executeRCON('togglewhitelist', enable ? '1' : '0');
-  await logger.log('togglewhitelist', interaction.user, `Whitelist ${enable ? 'Enabled' : 'Disabled'}`, result.data, result.success);
-  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📋 Whitelist Toggled').setDescription(`Whitelist ${enable ? 'Enabled' : 'Disabled'}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+async function handleToggleWhitelist(interaction) {
+  const result = await executeRCON('togglewhitelist');
+  await logger.log('togglewhitelist', interaction.user, 'Whitelist', result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('📋 Whitelist Toggled').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
 }
 
 async function handleWhitelist(interaction, action) {
@@ -290,10 +314,10 @@ async function handlePlayables(interaction, action, config) {
   }
 }
 
-async function handleToggleHumans(interaction, enable) {
-  const result = await executeRCON('togglehumans', enable ? '1' : '0');
-  await logger.log('togglehumans', interaction.user, `Humans ${enable ? 'Enabled' : 'Disabled'}`, result.data, result.success);
-  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🧑 Humans Toggled').setDescription(`Humans ${enable ? 'Enabled' : 'Disabled'}\n\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
+async function handleToggleHumans(interaction) {
+  const result = await executeRCON('togglehumans');
+  await logger.log('togglehumans', interaction.user, 'Humans', result.data, result.success);
+  return interaction.editReply({ embeds: [new EmbedBuilder().setTitle('🧑 Humans Toggled').setDescription(`\`\`\`${result.data}\`\`\``).setColor(0x00ff00)] });
 }
 
 async function handleAIDensity(interaction, density) {
