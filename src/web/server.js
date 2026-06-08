@@ -20,23 +20,23 @@ app.use(express.json());
 const COMMANDS = [
   { category: 'Communication', commands: [
     { name: 'announce', args: ['message'], desc: 'Broadcast a message to all players' },
-    { name: 'directmessage', args: ['player', 'message'], desc: 'Send a direct message to a player (EOS ID, Steam ID, or Name)' },
+    { name: 'directmessage', args: ['player', 'message'], desc: 'Send a direct message to a player' },
     { name: 'toggleglobalchat', args: ['0/1'], desc: 'Disable/Enable global chat' },
   ]},
+  { category: 'Info', commands: [
+    { name: 'serverdetails', args: [], desc: 'Show current server configuration' },
+    { name: 'playerlist', args: [], desc: 'List all connected players' },
+    { name: 'getplayerdata', args: ['SteamID64?'], desc: 'Get player class, growth, health, location' },
+    { name: 'getqueuestatus', args: [], desc: 'Show queue status when server is full' },
+    { name: 'getplayables', args: [], desc: 'List currently playable species' },
+  ]},
   { category: 'Moderation', commands: [
-    { name: 'ban', args: ['Name', 'SteamID64', 'Reason', 'Duration'], desc: 'Ban a player' },
     { name: 'kick', args: ['player', 'reason'], desc: 'Kick a player' },
+    { name: 'ban', args: ['player', 'SteamID64', 'reason', 'duration'], desc: 'Ban a player' },
     { name: 'slay', args: ['SteamID64'], desc: 'Instantly kill a player\'s dinosaur' },
     { name: 'togglewhitelist', args: [], desc: 'Enable/disable whitelist mode' },
     { name: 'addwhitelist', args: ['playerId'], desc: 'Add player(s) to whitelist' },
     { name: 'removewhitelist', args: ['playerId'], desc: 'Remove player(s) from whitelist' },
-  ]},
-  { category: 'Info', commands: [
-    { name: 'playerlist', args: [], desc: 'List all connected players' },
-    { name: 'getplayerdata', args: ['SteamID64?'], desc: 'Get a player\'s class, growth, health, location (omit for all)' },
-    { name: 'serverdetails', args: [], desc: 'Show current server configuration' },
-    { name: 'getqueuestatus', args: [], desc: 'Show queue status when server is full' },
-    { name: 'getplayables', args: [], desc: 'List currently playable species' },
   ]},
   { category: 'Server', commands: [
     { name: 'save', args: ['backupName?'], desc: 'Force a save (optional named backup)' },
@@ -53,7 +53,7 @@ const COMMANDS = [
     { name: 'togglemigrations', args: ['0/1'], desc: 'Toggle migration zones' },
   ]},
   { category: 'Admin', commands: [
-    { name: 'updateplayables', args: ['Class:enabled/disabled'], desc: 'Update which species are playable (e.g. Carnotaurus:enabled,Stegosaurus:disabled)' },
+    { name: 'updateplayables', args: ['Class:enabled/disabled'], desc: 'Update which species are playable' },
     { name: 'togglegrowthmultiplier', args: [], desc: 'Toggle growth on/off without restart' },
     { name: 'setgrowthmultiplier', args: ['value'], desc: 'Change growth speed live (e.g., 2.0)' },
     { name: 'togglehumans', args: ['0/1'], desc: 'Disable/Enable humans' },
@@ -106,7 +106,7 @@ async function handleConnect(ws, data) {
     rconClient.port = parseInt(port);
     rconClient.password = password;
     await rconClient.connect();
-    ws.send(JSON.stringify({ type: 'connected', data: `Connected to ${host}:${port}` }));
+    ws.send(JSON.stringify({ type: 'connected', data: `${host}:${port}` }));
   } catch (err) {
     ws.send(JSON.stringify({ type: 'error', data: `Connection failed: ${err.message}` }));
   }

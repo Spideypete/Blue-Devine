@@ -3,115 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evrima RCON Terminal</title>
+  <title>The Isle Evrima RCON Terminal</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #0d1117;
       color: #c9d1d9;
-      height: 100vh;
-      display: flex;
-      overflow: hidden;
+      min-height: 100vh;
     }
 
-    .sidebar {
-      width: 260px;
-      background: #161b22;
-      border-right: 1px solid #30363d;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .sidebar-header {
-      padding: 16px;
-      border-bottom: 1px solid #30363d;
-      font-size: 14px;
-      font-weight: 600;
-      color: #58a6ff;
+    .topnav {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 16px;
+      padding: 10px 20px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      font-size: 14px;
     }
 
-    .sidebar-header svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .sidebar-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-    }
-
-    .category {
-      margin-bottom: 16px;
-    }
-
-    .category-title {
-      font-size: 11px;
-      text-transform: uppercase;
+    .topnav a {
       color: #8b949e;
-      padding: 4px 8px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      text-decoration: none;
+      font-weight: 500;
     }
 
-    .cmd-btn {
-      display: block;
-      width: 100%;
-      padding: 6px 10px;
-      margin-bottom: 2px;
-      background: transparent;
-      border: none;
+    .topnav a:hover {
       color: #c9d1d9;
-      cursor: pointer;
-      text-align: left;
-      font-size: 13px;
-      border-radius: 4px;
-      font-family: inherit;
     }
 
-    .cmd-btn:hover {
-      background: #21262d;
-      color: #58a6ff;
-    }
-
-    .main {
-      flex: 1;
+    .topnav .logo {
       display: flex;
-      flex-direction: column;
-      padding: 16px;
-      overflow: hidden;
+      align-items: center;
+      gap: 6px;
+      color: #58a6ff;
+      font-weight: 600;
     }
 
-    .connection-bar {
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #f0f6fc;
+    }
+
+    .subtitle {
+      color: #8b949e;
+      font-size: 14px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .connection-section {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .connection-section h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #f0f6fc;
+    }
+
+    .connection-fields {
       display: flex;
       gap: 8px;
-      margin-bottom: 12px;
       flex-wrap: wrap;
       align-items: center;
     }
 
-    .connection-bar input {
+    .connection-fields input {
       padding: 8px 12px;
-      background: #161b22;
+      background: #0d1117;
       border: 1px solid #30363d;
       color: #c9d1d9;
       border-radius: 6px;
       font-size: 14px;
       font-family: inherit;
-      min-width: 120px;
     }
 
-    .connection-bar input:focus {
+    .connection-fields input:focus {
       outline: none;
       border-color: #58a6ff;
     }
 
-    .connection-bar button {
+    .connection-fields button {
       padding: 8px 16px;
       background: #238636;
       border: none;
@@ -123,55 +110,72 @@
       font-weight: 500;
     }
 
-    .connection-bar button:hover {
+    .connection-fields button:hover {
       background: #2ea043;
     }
 
-  .connection-bar button.danger {
-    background: #da3633;
-  }
-
-  .connection-bar button.danger:hover {
-    background: #f85149;
-  }
-
-  .connection-bar button.secondary {
-    background: #30363d;
-  }
-
-  .connection-bar button.secondary:hover {
-    background: #484f58;
-  }
-
-  .connection-bar button.ghost {
-    background: transparent;
-    border: 1px solid #30363d;
-    color: #8b949e;
-  }
-
-  .connection-bar button.ghost:hover {
-    border-color: #f85149;
-    color: #f85149;
-  }
-
-    .status {
-      font-size: 12px;
+    .connection-fields button.ghost {
+      background: transparent;
+      border: 1px solid #30363d;
       color: #8b949e;
-      margin-left: auto;
+      font-weight: 400;
+    }
+
+    .connection-fields button.ghost:hover {
+      border-color: #f85149;
+      color: #f85149;
+    }
+
+    .connection-fields button:disabled {
+      background: #30363d;
+      color: #8b949e;
+      cursor: not-allowed;
+    }
+
+    .main-layout {
       display: flex;
-      align-items: center;
-      gap: 6px;
+      gap: 16px;
     }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #f85149;
+    .commands-panel {
+      width: 200px;
+      flex-shrink: 0;
     }
 
-    .status.connected .status-dot {
-      background: #3fb950;
+    .commands-panel h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #8b949e;
+      margin-bottom: 8px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .cmd-list {
+      margin-bottom: 16px;
+    }
+
+    .cmd-btn {
+      display: block;
+      width: 100%;
+      padding: 4px 0;
+      background: none;
+      border: none;
+      color: #c9d1d9;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .cmd-btn:hover {
+      color: #58a6ff;
+      text-decoration: underline;
+    }
+
+    .terminal-panel {
+      flex: 1;
+      min-width: 0;
     }
 
     .terminal-header {
@@ -181,24 +185,45 @@
       margin-bottom: 8px;
     }
 
-    .terminal-title {
-      font-size: 12px;
+    .terminal-header h2 {
+      font-size: 14px;
+      font-weight: 600;
       color: #8b949e;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
+    .terminal-header button {
+      padding: 4px 12px;
+      background: #30363d;
+      border: none;
+      color: #c9d1d9;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+
+    .terminal-header button:hover {
+      background: #484f58;
+    }
+
     .terminal {
-      flex: 1;
       background: #0d1117;
       border: 1px solid #30363d;
       border-radius: 6px;
       padding: 12px;
+      min-height: 400px;
+      max-height: 600px;
       overflow-y: auto;
       font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
       font-size: 13px;
       line-height: 1.6;
-      min-height: 400px;
+    }
+
+    .terminal .placeholder {
+      color: #8b949e;
+      font-style: italic;
     }
 
     .terminal .line {
@@ -236,6 +261,11 @@
     .command-bar input:focus {
       outline: none;
       border-color: #58a6ff;
+    }
+
+    .command-bar input:disabled {
+      background: #21262d;
+      color: #8b949e;
     }
 
     .command-bar button {
@@ -279,8 +309,8 @@
       border: 1px solid #30363d;
       border-radius: 8px;
       padding: 20px;
-      min-width: 400px;
-      max-width: 500px;
+      min-width: 360px;
+      max-width: 480px;
     }
 
     .modal-content h3 {
@@ -375,38 +405,54 @@
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <div class="topnav">
+    <a href="#" class="logo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
       </svg>
-      Commands
-    </div>
-    <div class="sidebar-content scrollbar" id="commandList"></div>
+      xgaming.tools
+    </a>
+    <a href="#">All Tools</a>
+    <a href="#">Configs</a>
+    <a href="#">Docs</a>
+    <a href="#">Get a Server</a>
   </div>
 
-  <div class="main">
-    <div class="connection-bar">
-      <input type="text" id="host" placeholder="Host / IP">
-      <input type="text" id="port" placeholder="RCON Port" value="8888" style="width: 100px;">
-      <input type="text" id="password" placeholder="RCON Password" type="password">
-      <button id="connectBtn" onclick="connect()">Connect</button>
-      <button id="forgetBtn" class="ghost" onclick="forgetConnection()">Forget</button>
-      <button id="testBtn" class="secondary" onclick="testConnection()" style="display:none;">Test Connection</button>
-      <button id="disconnectBtn" class="danger" onclick="disconnect()" style="display:none;">Disconnect</button>
-      <span id="status" class="status"><span class="status-dot"></span>Disconnected</span>
+  <div class="container">
+    <h1>The Isle RCON Terminal</h1>
+    <p class="subtitle">Live browser RCON client for The Isle Evrima dedicated servers. Connect with your server's IP, RCON port, and password. Run any of the admin commands and see the server's response in real time.</p>
+
+    <div class="connection-section">
+      <h2>Server Connection</h2>
+      <div class="connection-fields">
+        <input type="text" id="host" placeholder="Host / IP">
+        <input type="text" id="port" placeholder="RCON Port" value="8888" style="width: 120px;">
+        <input type="text" id="password" placeholder="RCON Password" type="password">
+        <button id="connectBtn" onclick="connect()">Connect</button>
+        <button id="forgetBtn" class="ghost" onclick="forgetConnection()">Forget</button>
+        <button id="disconnectBtn" class="ghost" onclick="disconnect()" style="display:none;">Disconnect</button>
+      </div>
     </div>
 
-    <div class="terminal-header">
-      <span class="terminal-title">Terminal Output</span>
-      <button class="btn-secondary" onclick="clearTerminal()" style="padding: 4px 12px; font-size: 12px;">Clear</button>
-    </div>
+    <div class="main-layout">
+      <div class="commands-panel">
+        <div id="commandList"></div>
+      </div>
 
-    <div class="terminal scrollbar" id="terminal"></div>
+      <div class="terminal-panel">
+        <div class="terminal-header">
+          <h2>Terminal Output</h2>
+          <button onclick="clearTerminal()">Clear</button>
+        </div>
+        <div class="terminal scrollbar" id="terminal">
+          <div class="placeholder">Connect and send a command to see output here…</div>
+        </div>
 
-    <div class="command-bar">
-      <input type="text" id="commandInput" placeholder="Type command..." disabled>
-      <button id="sendBtn" onclick="sendCommand()" disabled>Send Command</button>
+        <div class="command-bar">
+          <input type="text" id="commandInput" placeholder="Type command..." disabled>
+          <button id="sendBtn" onclick="sendCommand()" disabled>Send Command</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -425,23 +471,23 @@
     const COMMANDS = [
       { category: 'Communication', commands: [
         { name: 'announce', args: ['message'], desc: 'Broadcast a message to all players' },
-        { name: 'directmessage', args: ['player', 'message'], desc: 'Send a direct message to a player (EOS ID, Steam ID, or Name)' },
+        { name: 'directmessage', args: ['player', 'message'], desc: 'Send a direct message to a player' },
         { name: 'toggleglobalchat', args: ['0/1'], desc: 'Disable/Enable global chat' },
       ]},
+      { category: 'Info', commands: [
+        { name: 'serverdetails', args: [], desc: 'Show current server configuration' },
+        { name: 'playerlist', args: [], desc: 'List all connected players' },
+        { name: 'getplayerdata', args: ['SteamID64?'], desc: 'Get player class, growth, health, location' },
+        { name: 'getqueuestatus', args: [], desc: 'Show queue status when server is full' },
+        { name: 'getplayables', args: [], desc: 'List currently playable species' },
+      ]},
       { category: 'Moderation', commands: [
-        { name: 'ban', args: ['player', 'SteamID64', 'reason', 'duration'], desc: 'Ban a player' },
         { name: 'kick', args: ['player', 'reason'], desc: 'Kick a player' },
+        { name: 'ban', args: ['player', 'SteamID64', 'reason', 'duration'], desc: 'Ban a player' },
         { name: 'slay', args: ['SteamID64'], desc: 'Instantly kill a player\'s dinosaur' },
         { name: 'togglewhitelist', args: [], desc: 'Enable/disable whitelist mode' },
         { name: 'addwhitelist', args: ['playerId'], desc: 'Add player(s) to whitelist' },
         { name: 'removewhitelist', args: ['playerId'], desc: 'Remove player(s) from whitelist' },
-      ]},
-      { category: 'Info', commands: [
-        { name: 'playerlist', args: [], desc: 'List all connected players' },
-        { name: 'getplayerdata', args: ['SteamID64?'], desc: 'Get a player\'s class, growth, health, location (omit for all)' },
-        { name: 'serverdetails', args: [], desc: 'Show current server configuration' },
-        { name: 'getqueuestatus', args: [], desc: 'Show queue status when server is full' },
-        { name: 'getplayables', args: [], desc: 'List currently playable species' },
       ]},
       { category: 'Server', commands: [
         { name: 'save', args: ['backupName?'], desc: 'Force a save (optional named backup)' },
@@ -458,7 +504,7 @@
         { name: 'togglemigrations', args: ['0/1'], desc: 'Toggle migration zones' },
       ]},
       { category: 'Admin', commands: [
-        { name: 'updateplayables', args: ['Class:enabled/disabled'], desc: 'Update which species are playable (e.g. Carnotaurus:enabled,Stegosaurus:disabled)' },
+        { name: 'updateplayables', args: ['Class:enabled/disabled'], desc: 'Update which species are playable' },
         { name: 'togglegrowthmultiplier', args: [], desc: 'Toggle growth on/off without restart' },
         { name: 'setgrowthmultiplier', args: ['value'], desc: 'Change growth speed live (e.g., 2.0)' },
         { name: 'togglehumans', args: ['0/1'], desc: 'Disable/Enable humans' },
@@ -489,8 +535,8 @@
       container.innerHTML = '';
       for (const cat of COMMANDS) {
         const catDiv = document.createElement('div');
-        catDiv.className = 'category';
-        catDiv.innerHTML = `<div class="category-title">${cat.category}</div>`;
+        catDiv.className = 'cmd-list';
+        catDiv.innerHTML = `<h3>${cat.category}</h3>`;
         for (const cmd of cat.commands) {
           const btn = document.createElement('button');
           btn.className = 'cmd-btn';
@@ -571,21 +617,13 @@
     }
 
     function forgetConnection() {
-  localStorage.removeItem('rcon_host');
-  localStorage.removeItem('rcon_port');
-  localStorage.removeItem('rcon_password');
-  document.getElementById('host').value = '';
-  document.getElementById('port').value = '8888';
-  document.getElementById('password').value = '';
-  appendLine('Connection details forgotten.', 'info');
-}
-
-function testConnection() {
-      const host = document.getElementById('host').value;
-      const port = document.getElementById('port').value;
-      saveConnection();
-      appendLine(`Testing connection to ${host}:${port}...`, 'info');
-      ws.send(JSON.stringify({ type: 'command', data: { command: 'serverdetails', args: '' } }));
+      localStorage.removeItem('rcon_host');
+      localStorage.removeItem('rcon_port');
+      localStorage.removeItem('rcon_password');
+      document.getElementById('host').value = '';
+      document.getElementById('port').value = '8888';
+      document.getElementById('password').value = '';
+      appendLine('Connection details forgotten.', 'info');
     }
 
     function disconnect() {
@@ -617,13 +655,9 @@ function testConnection() {
 
     function setConnected(state) {
       connected = state;
-      document.getElementById('status').innerHTML = state 
-        ? '<span class="status-dot"></span>Connected' 
-        : '<span class="status-dot"></span>Disconnected';
-      document.getElementById('status').className = 'status' + (state ? ' connected' : '');
-      document.getElementById('connectBtn').style.display = state ? 'none' : 'block';
-      document.getElementById('testBtn').style.display = state ? 'block' : 'none';
-      document.getElementById('disconnectBtn').style.display = state ? 'block' : 'none';
+      document.getElementById('connectBtn').style.display = state ? 'none' : 'inline-block';
+      document.getElementById('forgetBtn').style.display = state ? 'none' : 'inline-block';
+      document.getElementById('disconnectBtn').style.display = state ? 'inline-block' : 'none';
       document.getElementById('commandInput').disabled = !state;
       document.getElementById('sendBtn').disabled = !state;
     }
@@ -643,6 +677,9 @@ function testConnection() {
 
     function appendLine(text, cls = '') {
       const terminal = document.getElementById('terminal');
+      if (terminal.querySelector('.placeholder')) {
+        terminal.innerHTML = '';
+      }
       const line = document.createElement('div');
       line.className = 'line ' + cls;
       
@@ -657,7 +694,7 @@ function testConnection() {
     }
 
     function clearTerminal() {
-      document.getElementById('terminal').innerHTML = '';
+      document.getElementById('terminal').innerHTML = '<div class="placeholder">Connect and send a command to see output here…</div>';
     }
 
     document.getElementById('commandInput').addEventListener('keydown', (e) => {
