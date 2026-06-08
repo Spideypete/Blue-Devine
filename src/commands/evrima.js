@@ -23,7 +23,6 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((sub) => sub.setName('serverdetails').setDescription('Get server details'))
   .addSubcommand((sub) => sub.setName('queue').setDescription('Get queue status'))
   .addSubcommand((sub) => sub.setName('pause').setDescription('Toggle server pause'))
-  .addSubcommand((sub) => sub.setName('toggleglobalchat').setDescription('Toggle global chat'))
   .addSubcommand((sub) => sub.setName('toggleai').setDescription('Toggle AI on/off'))
   .addSubcommand((sub) => sub.setName('togglemigrations').setDescription('Toggle migrations'))
   .addSubcommand((sub) => sub.setName('togglegrowthmultiplier').setDescription('Toggle growth multiplier'))
@@ -35,7 +34,6 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((sub) => sub.setName('playables').setDescription('Get playable dinosaurs list'))
   .addSubcommand((sub) => sub.setName('updateplayables').setDescription('Update playable dinosaurs').addStringOption((opt) => opt.setName('config').setDescription('Comma-separated dino classes').setRequired(true)))
   .addSubcommand((sub) => sub.setName('togglehumans').setDescription('Toggle humans on/off'))
-  .addSubcommand((sub) => sub.setName('aidensity').setDescription('Set AI density').addNumberOption((opt) => opt.setName('density').setDescription('Density 0.0-1.0').setRequired(true)))
   .addSubcommand((sub) => sub.setName('custom').setDescription('Send custom RCON command').addStringOption((opt) => opt.setName('command').setDescription('Full RCON command').setRequired(true)));
 
 export const evrimaCommand = { data, execute };
@@ -102,8 +100,6 @@ export async function execute(interaction) {
         return handleQueue(interaction);
       case 'pause':
         return handlePause(interaction);
-      case 'toggleglobalchat':
-        return handleToggle(interaction, 'toggleglobalchat');
       case 'toggleai':
         return handleToggle(interaction, 'toggleai');
       case 'togglemigrations':
@@ -126,8 +122,6 @@ export async function execute(interaction) {
         return handlePlayables(interaction, 'updateplayables', interaction.options.getString('config'));
       case 'togglehumans':
         return handleToggleHumans(interaction);
-      case 'aidensity':
-        return handleAIDensity(interaction, interaction.options.getNumber('density'));
       case 'custom':
         return handleCustom(interaction);
       default:
@@ -153,9 +147,9 @@ function showHelp(interaction) {
     .setColor(0x3498db)
     .addFields(
       { name: '👥 Player Management', value: '`/evrima playerlist` `/evrima getplayerdata` `/evrima kick` `/evrima ban` `/evrima unban` `/evrima slay`', inline: false },
-      { name: '📢 Communication', value: '`/evrima announce` `/evrima directmessage` `/evrima toggleglobalchat`', inline: false },
+      { name: '📢 Communication', value: '`/evrima announce` `/evrima directmessage`', inline: false },
       { name: '🖥️ Server', value: '`/evrima save` `/evrima serverdetails` `/evrima queue` `/evrima pause`', inline: false },
-      { name: '🌍 World', value: '`/evrima toggleai` `/evrima togglemigrations` `/evrima togglegrowthmultiplier` `/evrima setgrowthmultiplier` `/evrima wipecorpses` `/evrima aidensity` `/evrima togglehumans`', inline: false },
+      { name: '🌍 World', value: '`/evrima toggleai` `/evrima togglemigrations` `/evrima togglegrowthmultiplier` `/evrima setgrowthmultiplier` `/evrima wipecorpses` `/evrima togglehumans`', inline: false },
       { name: '📋 Whitelist', value: '`/evrima togglewhitelist` `/evrima addwhitelist` `/evrima removewhitelist`', inline: false },
       { name: '🦕 Playables', value: '`/evrima playables` `/evrima updateplayables`', inline: false },
       { name: '💻 Custom', value: '`/evrima custom`', inline: false }

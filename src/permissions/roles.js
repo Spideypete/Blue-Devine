@@ -9,11 +9,11 @@ export const PERMISSIONS = {
   [ROLES.OWNER]: ['*'],
   [ROLES.ADMIN]: [
     'playerlist', 'getplayerdata', 'kick', 'ban', 'unban', 'slay',
-    'announce', 'directmessage', 'toggleglobalchat', 'save', 'serverdetails', 'queue',
+    'announce', 'directmessage', 'save', 'serverdetails', 'queue',
     'pause', 'toggleai', 'togglemigrations', 'togglegrowthmultiplier',
     'setgrowthmultiplier', 'togglewhitelist', 'disablewhitelist',
     'addwhitelist', 'removewhitelist', 'playables', 'updateplayables',
-    'wipecorpses', 'togglehumans', 'aidensity', 'togglenetupdatedistancechecks',
+    'wipecorpses', 'togglehumans', 'togglenetupdatedistancechecks',
     'toggleailearning', 'disableaiclasses', 'custom',
   ],
   [ROLES.MODERATOR]: [
