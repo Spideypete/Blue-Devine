@@ -29,24 +29,17 @@ npm install --production --omit=dev
 echo "✅ Dependencies installed"
 echo ""
 
-echo "🌐 Starting web terminal..."
-node src/web/server.js &
-WEB_PID=$!
+echo "🔧 Installing PM2 globally..."
+npm install -g pm2
+echo "✅ PM2 ready"
+echo ""
 
-echo "🤖 Starting Discord bot..."
-npm start &
-BOT_PID=$!
+echo "🚀 Starting bot + web terminal with PM2..."
+pm2 start ecosystem.config.js --env production
 
-cleanup() {
-    echo ""
-    echo "[Shutdown] Stopping services..."
-    kill $WEB_PID 2>/dev/null || true
-    kill $BOT_PID 2>/dev/null || true
-    wait
-    echo "[Shutdown] Done"
-    exit 0
-}
+echo "📊 PM2 status:"
+pm2 list
 
-trap cleanup SIGINT SIGTERM
-
-wait
+echo ""
+echo "✅ Bot and web terminal are running!"
+echo "🌐 Web terminal: http://0.0.0.0:3000"
