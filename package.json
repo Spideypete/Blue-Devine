@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "deploy": "bash deploy.sh",
+    "webhook": "node src/webhook.js"
   },
   "dependencies": {
     "discord.js": "^14.16.3",

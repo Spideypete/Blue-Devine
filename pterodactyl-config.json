@@ -1,0 +1,36 @@
+{
+  "name": "Evrima RCON Bot",
+  "author": "Spideypete",
+  "description": "Discord bot for controlling The Isle Evrima servers via RCON",
+  "version": "2.0.0",
+  "docker_image": "node:20-slim",
+  "config": {
+    "files": {
+      ".env": {
+        "display": "Environment Variables",
+        "editable": true
+      }
+    },
+    "startup": "bash deploy.sh",
+    "stop": "killall -s SIGINT node || killall -s SIGTERM node || pkill -f 'node src/index.js'",
+    "logs": "/home/container/logs/",
+    "environment": {
+      "DISCORD_TOKEN": "",
+      "DISCORD_CLIENT_ID": "",
+      "GUILD_ID": "",
+      "LOG_CHANNEL_ID": "",
+      "OWNER_ROLE_ID": "",
+      "ADMIN_ROLE_ID": "",
+      "MOD_ROLE_ID": "",
+      "RCON_HOST": "127.0.0.1",
+      "RCON_PORT": "8888",
+      "RCON_PASSWORD": "",
+      "RCON_TIMEOUT": "10000",
+      "NODE_ENV": "production"
+    }
+  },
+  "features": {
+    "auto_update": true,
+    "auto_deploy": true
+  }
+}
