@@ -107,13 +107,20 @@ class EvrimaRCONClient {
 
       let responseBuffer = Buffer.alloc(0);
       let resolved = false;
-      const timeout = setTimeout(() => {
+
+      const cleanup = () => {
         if (!resolved) {
           resolved = true;
+          clearTimeout(timeout);
           this.socket.removeListener('data', onData);
+          this.socket.removeListener('end', onEnd);
           this.socket.removeListener('error', onError);
-          reject(new Error('RCON response timeout'));
         }
+      };
+
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error('RCON response timeout'));
       }, this.timeout);
 
       const onData = (chunk) => {
@@ -121,25 +128,35 @@ class EvrimaRCONClient {
 
         const nullIndex = responseBuffer.indexOf(0x00);
         if (nullIndex !== -1) {
-          clearTimeout(timeout);
-          resolved = true;
-          this.socket.removeListener('data', onData);
-          this.socket.removeListener('error', onError);
-          const response = responseBuffer.slice(0, nullIndex).toString('utf8');
+          cleanup();
+          let response = responseBuffer.slice(0, nullIndex).toString('utf8');
+          if (response.startsWith('\x03')) {
+            response = response.slice(1);
+          }
           resolve(response);
         }
       };
 
-      const onError = (error) => {
-        if (!resolved) {
-          clearTimeout(timeout);
-          resolved = true;
-          this.socket.removeListener('data', onData);
-          reject(error);
+      const onEnd = () => {
+        cleanup();
+        let response = '';
+        if (responseBuffer.length > 0) {
+          if (responseBuffer[0] === 0x03) {
+            response = responseBuffer.slice(1).toString('utf8').replace(/\0+$/, '');
+          } else {
+            response = responseBuffer.toString('utf8').replace(/\0+$/, '');
+          }
         }
+        resolve(response);
+      };
+
+      const onError = (error) => {
+        cleanup();
+        reject(error);
       };
 
       this.socket.on('data', onData);
+      this.socket.on('end', onEnd);
       this.socket.on('error', onError);
       this.socket.write(data);
     });
