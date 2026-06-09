@@ -134,25 +134,56 @@ async function buildSpeciesView(userId) {
   state.speciesPage = page;
   const pageKeys = keys.slice(page * pageSize, page * pageSize + pageSize);
   
-  const options = pageKeys.map(k => {
+  const options = [];
+  for (const k of pageKeys) {
     const dino = DINOS[k];
-    if (!dino || !dino.name) return null;
-    return {
-      label: dino.name.substring(0, 100),
+    if (!dino) continue;
+    const name = (dino.name || k).toString().trim();
+    if (!name) continue;
+    const diet = (dino.diet || 'unknown').toString().trim();
+    const hasPrime = !!dino.hasPrime;
+    const desc = `${diet}${hasPrime ? ' | Prime' : ''}`.substring(0, 100);
+    options.push({
+      label: name.substring(0, 100),
       value: `species_${k}`,
-      description: `${dino.diet}${dino.hasPrime ? ' | Prime' : ''}`.substring(0, 100)
-    };
-  }).filter(Boolean);
+      description: desc || 'No description'
+    });
+  }
   
   if (options.length === 0) {
     return {
       embed: new EmbedBuilder()
         .setTitle('🦕 Buy Dinosaur')
-        .setDescription('No dinosaurs available right now.')
+        .setDescription('No dinosaurs available right now. Contact an admin.')
         .setColor(0xff0000),
       components: []
     };
   }
+  
+  const embed = new EmbedBuilder()
+    .setTitle('🦕 Buy Dinosaur')
+    .setDescription('Select a species to purchase')
+    .setFooter({ text: `Page ${page+1}/${totalPages}` })
+    .setColor(0x3498db);
+  
+  const rows = [];
+  rows.push(new ActionRowBuilder().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId('species_select')
+      .setPlaceholder('Choose a species...')
+      .addOptions(options)
+  ));
+  
+  const nav = [];
+  if (totalPages > 1) {
+    nav.push(new ButtonBuilder().setCustomId('page_prev').setLabel('◀').setStyle(ButtonStyle.Secondary).setDisabled(page === 0));
+    nav.push(new ButtonBuilder().setCustomId('page_next').setLabel('▶').setStyle(ButtonStyle.Secondary).setDisabled(page === totalPages - 1));
+  }
+  nav.push(new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger));
+  rows.push(new ActionRowBuilder().addComponents(nav));
+  
+  return { embed, components: rows };
+}
   
   const embed = new EmbedBuilder().setTitle('🦕 Buy Dinosaur').setDescription('Select a species').setFooter({ text: `Page ${page+1}/${totalPages}` }).setColor(0x3498db);
   const rows = [
