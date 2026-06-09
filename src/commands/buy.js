@@ -159,7 +159,7 @@ async function buildSpeciesView(userId) {
       components: []
     };
   }
-  
+
   const embed = new EmbedBuilder()
     .setTitle('🦕 Buy Dinosaur')
     .setDescription('Select a species to purchase')
@@ -182,20 +182,6 @@ async function buildSpeciesView(userId) {
   nav.push(new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger));
   rows.push(new ActionRowBuilder().addComponents(nav));
   
-  return { embed, components: rows };
-}
-  
-  const embed = new EmbedBuilder().setTitle('🦕 Buy Dinosaur').setDescription('Select a species').setFooter({ text: `Page ${page+1}/${totalPages}` }).setColor(0x3498db);
-  const rows = [
-    new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('species_select').setPlaceholder('Choose a species...').addOptions(options))
-  ];
-  const nav = [];
-  if (totalPages > 1) {
-    nav.push(new ButtonBuilder().setCustomId('page_prev').setLabel('◀').setStyle(ButtonStyle.Secondary).setDisabled(page === 0));
-    nav.push(new ButtonBuilder().setCustomId('page_next').setLabel('▶').setStyle(ButtonStyle.Secondary).setDisabled(page === totalPages - 1));
-  }
-  nav.push(new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger));
-  rows.push(new ActionRowBuilder().addComponents(nav));
   return { embed, components: rows };
 }
 
@@ -290,16 +276,6 @@ async function buildMutationView(userId) {
     new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger)
   ));
   
-  return { embed, components: rows };
-}
-  
-  const selected = state.mutations.slice(0, slotCount).filter(Boolean).map(m => MUTATION_INFO[m]?.name || m).join('\n') || 'None';
-  const embed = new EmbedBuilder().setTitle('🧬 Mutations').setDescription('Pick mutations for each slot').addFields({ name: 'Selected', value: selected }).setColor(0x3498db);
-  rows.push(new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('back').setLabel('◀ Back').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('summary').setLabel('📋 Summary').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger)
-  ));
   return { embed, components: rows };
 }
 
