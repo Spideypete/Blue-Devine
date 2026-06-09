@@ -257,10 +257,41 @@ async function buildMutationView(userId) {
     const slotNum = s + 1;
     const range = getSlotMutationRange(slotNum, state.isPrime);
     const rangeText = range ? `${range[0]}%-${range[1]}%` : 'N/A';
-    const opts = available.map(m => ({ label: m.name, value: m.key, description: m.desc.substring(0, 50), default: state.mutations[s] === m.key }));
-    if (opts.length > 25) opts.length = 25;
-    rows.push(new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId(`mutation_${s}`).setPlaceholder(`Slot ${slotNum} (${rangeText})`).addOptions(opts)));
+    
+    const opts = [];
+    for (const m of available) {
+      const key = m.key;
+      if (!key || typeof key !== 'string' || key.trim() === '') continue;
+      const label = (m.name || key).substring(0, 100);
+      const desc = ((m.desc || '') || '').substring(0, 50);
+      opts.push({
+        label: label,
+        value: key.substring(0, 100),
+        description: desc || 'No description',
+        default: state.mutations[s] === key
+      });
+    }
+    if (opts.length === 0) continue;
+    
+    rows.push(new ActionRowBuilder().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId(`mutation_${s}`)
+        .setPlaceholder(`Slot ${slotNum} (${rangeText})`)
+        .addOptions(opts)
+    ));
   }
+  
+  const selected = state.mutations.slice(0, slotCount).filter(Boolean).map(m => MUTATION_INFO[m]?.name || m).join('\n') || 'None';
+  const embed = new EmbedBuilder().setTitle('🧬 Mutations').setDescription('Pick mutations for each slot').addFields({ name: 'Selected', value: selected || 'None' }).setColor(0x3498db);
+  
+  rows.push(new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('back').setLabel('◀ Back').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('summary').setLabel('📋 Summary').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger)
+  ));
+  
+  return { embed, components: rows };
+}
   
   const selected = state.mutations.slice(0, slotCount).filter(Boolean).map(m => MUTATION_INFO[m]?.name || m).join('\n') || 'None';
   const embed = new EmbedBuilder().setTitle('🧬 Mutations').setDescription('Pick mutations for each slot').addFields({ name: 'Selected', value: selected }).setColor(0x3498db);
