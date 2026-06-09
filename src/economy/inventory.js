@@ -81,10 +81,14 @@ function saveDatabase() {
   fs.writeFileSync(DB_PATH, buffer);
 }
 
+export { saveDatabase };
+
 function getDb() {
   if (!db) throw new Error('Inventory database not initialized');
   return db;
 }
+
+export { getDb as getInvDb };
 
 export async function ensureInventoryDb() {
   if (!db) {
@@ -151,11 +155,11 @@ export async function getDinoPrice(dinoKey) {
   return 1;
 }
 
-export async function setDinoPrice(dinoKey, price) {
+export async function setDinoPrice(dinoKey, price, enabled = true) {
   await ensureInventoryDb();
   getDb().run(
-    'INSERT OR REPLACE INTO dino_prices (dino_key, price) VALUES (?, ?)',
-    [dinoKey, price]
+    'INSERT OR REPLACE INTO dino_prices (dino_key, price, enabled) VALUES (?, ?, ?)',
+    [dinoKey, price, enabled ? 1 : 0]
   );
   saveDatabase();
 }

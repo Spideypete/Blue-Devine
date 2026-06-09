@@ -138,6 +138,8 @@ function getDb() {
   return db;
 }
 
+export { getDb as getCoinsDb };
+
 export async function ensureDb() {
   if (!db) {
     await initDatabase();
