@@ -322,6 +322,60 @@
     .scrollbar::-webkit-scrollbar-thumb:hover {
       background: #484f58;
     }
+    .admin-panel table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .admin-panel th, .admin-panel td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid #30363d;
+    }
+    .admin-panel th {
+      color: #8b949e;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .admin-panel .admin-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .admin-panel .admin-card h3 {
+      color: #f0f6fc;
+      margin-bottom: 12px;
+    }
+    .admin-panel input, .admin-panel select {
+      padding: 6px 10px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .admin-panel button {
+      padding: 6px 14px;
+      background: #238636;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 500;
+    }
+    .admin-panel button:hover {
+      background: #2ea043;
+    }
+    .admin-panel button.danger {
+      background: #da3633;
+    }
+    .admin-panel button.danger:hover {
+      background: #f85149;
+    }
   </style>
 </head>
 <body>
@@ -395,6 +449,10 @@
             <a class="cmd-link" href="#" onclick="showCommand('togglehumans',['0/1'],'Disable/Enable humans','Admin');return false">togglehumans</a>
             <a class="cmd-link" href="#" onclick="showCommand('togglegrowthmultiplier',[],'Toggle growth on/off without restart','Admin');return false">togglegrowthmultiplier</a>
             <a class="cmd-link" href="#" onclick="showCommand('setgrowthmultiplier',['value'],'Change growth speed live (e.g., 2.0)','Admin');return false">setgrowthmultiplier</a>
+            <a class="cmd-link" href="#" onclick="loadCoinCosts();return false">💰 Coin Costs</a>
+            <a class="cmd-link" href="#" onclick="loadCoinSettings();return false">⚙️ Coin Settings</a>
+            <a class="cmd-link" href="#" onclick="loadCoinLeaderboard();return false">🏆 Leaderboard</a>
+            <a class="cmd-link" href="#" onclick="loadDatabase();return false">🗄️ Database</a>
           </div>
         </div>
       </div>
@@ -406,6 +464,10 @@
           <div id="formFields"></div>
           <button id="formSendBtn" onclick="sendFromForm()">Send Command</button>
           <p class="connect-msg" id="connectMsg">Connect to your server first.</p>
+        </div>
+
+        <div class="admin-panel" id="adminPanel" style="display:none; padding:16px; overflow-y:auto;">
+          <div id="adminContent"></div>
         </div>
 
         <div class="terminal-panel">
@@ -615,6 +677,255 @@
     });
 
     loadConnection();
+  </script>
+
+  <script>
+    function hideAdminPanels() {
+      document.getElementById('commandPanel').classList.remove('visible');
+      document.getElementById('adminPanel').style.display = 'none';
+    }
+
+    async function loadCoinCosts() {
+      hideAdminPanels();
+      const panel = document.getElementById('adminPanel');
+      panel.style.display = 'block';
+      const content = document.getElementById('adminContent');
+      content.innerHTML = '<div class="admin-card"><h3>💰 Command Costs</h3><p style="color:#8b949e">Loading...</p></div>';
+
+      try {
+        const res = await fetch('/api/economy/costs');
+        const costs = await res.json();
+        const settingsRes = await fetch('/api/economy/settings');
+        const settings = await settingsRes.json();
+        const symbol = settings.currency_symbol || '🪙';
+        const name = settings.currency_name || 'coins';
+
+        let html = '<div class="admin-card"><h3>💰 Command Costs</h3><table><tr><th>Command</th><th>Cost</th><th>Status</th><th>Description</th><th>Action</th></tr>';
+        for (const [cmd, data] of Object.entries(costs)) {
+          html += `<tr>
+            <td>/${cmd}</td>
+            <td><input type="number" id="cost_${cmd}" value="${data.cost}" style="width:80px"></td>
+            <td>${data.enabled ? '✅ Active' : '⛔ Disabled'}</td>
+            <td>${data.description || '-'}</td>
+            <td>
+              <button onclick="updateCost('${cmd}')">Save</button>
+              <button class="danger" onclick="toggleCost('${cmd}')">${data.enabled ? 'Disable' : 'Enable'}</button>
+            </td>
+          </tr>`;
+        }
+        html += '</table></div>';
+        content.innerHTML = html;
+      } catch (e) {
+        content.innerHTML = `<div class="admin-card"><h3>💰 Command Costs</h3><p style="color:#f85149">Error loading costs: ${e.message}</p></div>`;
+      }
+    }
+
+    async function loadCoinSettings() {
+      hideAdminPanels();
+      const panel = document.getElementById('adminPanel');
+      panel.style.display = 'block';
+      const content = document.getElementById('adminContent');
+      content.innerHTML = '<div class="admin-card"><h3>⚙️ Coin Settings</h3><p style="color:#8b949e">Loading...</p></div>';
+
+      try {
+        const res = await fetch('/api/economy/settings');
+        const settings = await res.json();
+
+        let html = '<div class="admin-card"><h3>⚙️ Coin Settings</h3><table>';
+        for (const [key, value] of Object.entries(settings)) {
+          html += `<tr><td><label>${key}</label></td><td><input type="text" id="setting_${key}" value="${value}"></td></tr>`;
+        }
+        html += '</table><button onclick="updateSettings()" style="margin-top:12px">Save All Settings</button></div>';
+        content.innerHTML = html;
+      } catch (e) {
+        content.innerHTML = `<div class="admin-card"><h3>⚙️ Coin Settings</h3><p style="color:#f85149">Error: ${e.message}</p></div>`;
+      }
+    }
+
+    async function loadCoinLeaderboard() {
+      hideAdminPanels();
+      const panel = document.getElementById('adminPanel');
+      panel.style.display = 'block';
+      const content = document.getElementById('adminContent');
+      content.innerHTML = '<div class="admin-card"><h3>🏆 Leaderboard</h3><p style="color:#8b949e">Loading...</p></div>';
+
+      try {
+        const res = await fetch('/api/economy/leaderboard');
+        const accounts = await res.json();
+        const settingsRes = await fetch('/api/economy/settings');
+        const settings = await settingsRes.json();
+        const symbol = settings.currency_symbol || '🪙';
+
+        let html = '<div class="admin-card"><h3>🏆 Coin Leaderboard</h3><table><tr><th>#</th><th>User</th><th>Balance</th><th>Steam ID</th></tr>';
+        accounts.forEach((acc, i) => {
+          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`;
+          html += `<tr><td>${medal}</td><td>${acc.discord_id}</td><td>${acc.balance} ${symbol}</td><td>${acc.steam_id || 'Not linked'}</td></tr>`;
+        });
+        html += '</table></div>';
+        content.innerHTML = html;
+      } catch (e) {
+        content.innerHTML = `<div class="admin-card"><h3>🏆 Leaderboard</h3><p style="color:#f85149">Error: ${e.message}</p></div>`;
+      }
+    }
+
+    async function updateCost(command) {
+      const cost = document.getElementById('cost_' + command).value;
+      await fetch('/api/economy/cost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command, cost: parseInt(cost) })
+      });
+      appendLine(`Updated /${command} cost to ${cost}`, 'info');
+      loadCoinCosts();
+    }
+
+    async function toggleCost(command) {
+      await fetch('/api/economy/cost/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command })
+      });
+      loadCoinCosts();
+    }
+
+    async function updateSettings() {
+      const inputs = document.querySelectorAll('#adminContent input[id^="setting_"]');
+      const updates = {};
+      inputs.forEach(input => {
+        const key = input.id.replace('setting_', '');
+        updates[key] = input.value;
+      });
+      await fetch('/api/economy/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      appendLine('Settings updated', 'info');
+    }
+
+    async function loadDatabase() {
+      hideAdminPanels();
+      const panel = document.getElementById('adminPanel');
+      panel.style.display = 'block';
+      const content = document.getElementById('adminContent');
+      content.innerHTML = '<div class="admin-card"><h3>🗄️ Database</h3><p style="color:#8b949e">Loading...</p></div>';
+
+      try {
+        const [dinosRes, playersRes, inventoryRes] = await Promise.all([
+          fetch('/api/database/dinos'),
+          fetch('/api/database/players'),
+          fetch('/api/database/inventory')
+        ]);
+        
+        const dinos = await dinosRes.json();
+        const players = await playersRes.json();
+        const inventory = await inventoryRes.json();
+
+        let html = '<div class="admin-card"><h3>🦕 Dinos & Prices</h3><table><tr><th>Species</th><th>Diet</th><th>Prime</th><th>Price</th><th>Enabled</th><th>Action</th></tr>';
+        for (const dino of dinos) {
+          html += `<tr>
+            <td>${dino.name}</td>
+            <td>${dino.diet}</td>
+            <td>${dino.hasPrime ? '✅' : '❌'}</td>
+            <td><input type="number" id="price_${dino.key}" value="${dino.price}" style="width:70px"></td>
+            <td><input type="checkbox" id="enabled_${dino.key}" ${dino.enabled ? 'checked' : ''}></td>
+            <td><button onclick="updateDinoPrice('${dino.key}')">Save</button></td>
+          </tr>`;
+        }
+        html += '</table></div>';
+
+        html += '<div class="admin-card"><h3>👥 Players</h3><table><tr><th>Discord ID</th><th>Steam ID</th><th>Balance</th><th>Inventory</th><th>Last Daily</th></tr>';
+        for (const p of players) {
+          html += `<tr>
+            <td>${p.discord_id}</td>
+            <td>${p.steam_id || 'Not linked'}</td>
+            <td>${p.balance} 🪙</td>
+            <td>${p.inventory_count}</td>
+            <td>${p.last_daily || 'Never'}</td>
+          </tr>`;
+        }
+        html += '</table></div>';
+
+        html += '<div class="admin-card"><h3>📦 Full Inventory</h3><table><tr><th>ID</th><th>Owner</th><th>Dino</th><th>Gender</th><th>Growth</th><th>Prime</th><th>Mutations</th><th>Purchased</th><th>Action</th></tr>';
+        for (const item of inventory) {
+          const muts = [item.mutation_slot_1, item.mutation_slot_2, item.mutation_slot_3, item.mutation_slot_4]
+            .filter(Boolean).map(m => m).join(', ') || 'None';
+          html += `<tr>
+            <td>${item.id}</td>
+            <td>${item.discord_id}</td>
+            <td>${item.dino_name || item.dino_key}</td>
+            <td>${item.gender}</td>
+            <td>${item.growth}%</td>
+            <td>${item.is_prime ? '✅' : '❌'}</td>
+            <td>${muts}</td>
+            <td>${item.purchased_at}</td>
+            <td><button class="danger" onclick="deleteInventoryItem(${item.id})">Delete</button></td>
+          </tr>`;
+        }
+        html += '</table></div>';
+
+        html += '<div class="admin-card"><h3>🧬 Mutations & Prices</h3><table><tr><th>Mutation</th><th>Diet</th><th>Value</th><th>Price</th><th>Enabled</th></tr>';
+        const mutRes = await fetch('/api/database/mutation-prices');
+        const mutPrices = await mutRes.json();
+        const mutDataRes = await fetch('/api/database/mutations');
+        const mutData = await mutDataRes.json();
+        for (const mut of mutData) {
+          const p = mutPrices[mut.key] || { price: 1, enabled: true };
+          html += `<tr>
+            <td><strong>${mut.name}</strong><br><small style="color:#8b949e">${mut.desc.substring(0, 60)}</small></td>
+            <td>${mut.diet}</td>
+            <td>${mut.value || '-'}</td>
+            <td><input type="number" id="mprice_${mut.key}" value="${p.price}" style="width:70px"></td>
+            <td><input type="checkbox" id="menabled_${mut.key}" ${p.enabled ? 'checked' : ''}></td>
+          </tr>`;
+        }
+        html += '</table><button onclick="updateAllMutationPrices()" style="margin-top:12px">Save All Mutation Prices</button></div>';
+
+        content.innerHTML = html;
+      } catch (e) {
+        content.innerHTML = `<div class="admin-card"><h3>🗄️ Database</h3><p style="color:#f85149">Error: ${e.message}</p></div>`;
+      }
+    }
+
+    async function updateDinoPrice(key) {
+      const price = document.getElementById('price_' + key).value;
+      const enabled = document.getElementById('enabled_' + key).checked;
+      await fetch('/api/database/dinos/' + key, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ price: parseInt(price), enabled })
+      });
+      appendLine(`Updated ${key} price to ${price}`, 'info');
+      loadDatabase();
+    }
+
+    async function deleteInventoryItem(id) {
+      if (!confirm('Delete this inventory item?')) return;
+      await fetch('/api/database/inventory/' + id, { method: 'DELETE' });
+      appendLine('Deleted inventory item ' + id, 'info');
+      loadDatabase();
+    }
+
+    async function updateAllMutationPrices() {
+      const inputs = document.querySelectorAll('#adminContent input[id^="mprice_"]');
+      const updates = {};
+      inputs.forEach(input => {
+        const key = input.id.replace('mprice_', '');
+        const enabled = document.getElementById('menabled_' + key)?.checked ?? true;
+        updates[key] = { price: parseInt(input.value), enabled };
+      });
+      
+      for (const [key, data] of Object.entries(updates)) {
+        await fetch('/api/database/mutations/' + key, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      
+      appendLine('All mutation prices updated', 'info');
+      loadDatabase();
+    }
   </script>
 </body>
 </html>

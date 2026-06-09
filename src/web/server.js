@@ -4,6 +4,10 @@ import { WebSocketServer } from 'ws';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import rconClient from '../rcon/client.js';
+import {
+  getCommandCost, setCommandCost, getSetting, setSetting,
+  getAllAccounts, getTransactionHistory
+} from '../economy/coins.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -156,6 +160,249 @@ async function handleDisconnect(ws) {
   await rconClient.disconnect();
   ws.send(JSON.stringify({ type: 'disconnected', data: 'Disconnected' }));
 }
+
+app.get('/api/economy/costs', async (req, res) => {
+  try {
+    const { getDb, ensureDb } = await import('../economy/coins.js');
+    await ensureDb();
+    const db = (await import('../economy/coins.js')).getDb();
+    const result = db.exec('SELECT command_name, cost, enabled, description FROM command_costs ORDER BY command_name');
+    const costs = {};
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        const [cmd, cost, enabled, desc] = row;
+        costs[cmd] = { cost, enabled: !!enabled, description: desc };
+      }
+    }
+    res.json(costs);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/economy/cost', async (req, res) => {
+  try {
+    const { command, cost } = req.body;
+    const { setCommandCost } = await import('../economy/coins.js');
+    await setCommandCost(command, cost);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/economy/cost/toggle', async (req, res) => {
+  try {
+    const { command } = req.body;
+    const { getCommandCost, setCommandCost } = await import('../economy/coins.js');
+    const current = await getCommandCost(command);
+    await setCommandCost(command, current, !current);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/economy/settings', async (req, res) => {
+  try {
+    const { getDb, ensureDb } = await import('../economy/coins.js');
+    await ensureDb();
+    const db = (await import('../economy/coins.js')).getDb();
+    const result = db.exec('SELECT key, value FROM settings');
+    const settings = {};
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        settings[row[0]] = row[1];
+      }
+    }
+    res.json(settings);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/economy/settings', async (req, res) => {
+  try {
+    const { setSetting } = await import('../economy/coins.js');
+    const updates = req.body;
+    for (const [key, value] of Object.entries(updates)) {
+      await setSetting(key, String(value));
+    }
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/economy/leaderboard', async (req, res) => {
+  try {
+    const { getAllAccounts } = await import('../economy/coins.js');
+    const accounts = await getAllAccounts();
+    res.json(accounts);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/database/dinos', async (req, res) => {
+  try {
+    const { getAllDinoPrices, ensureInventoryDb } = await import('../economy/inventory.js');
+    await ensureInventoryDb();
+    const prices = await getAllDinoPrices();
+    const { DINOS } = await import('../economy/dinos.js');
+    
+    const data = Object.entries(DINOS).map(([key, dino]) => ({
+      key,
+      name: dino.name,
+      diet: dino.diet,
+      hasPrime: dino.hasPrime,
+      price: prices[key]?.price || 1,
+      enabled: prices[key]?.enabled ?? true
+    }));
+    
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/database/dinos/:key', async (req, res) => {
+  try {
+    const { key } = req.params;
+    const { price, enabled } = req.body;
+    const { setDinoPrice } = await import('../economy/inventory.js');
+    await setDinoPrice(key, parseInt(price));
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/database/players', async (req, res) => {
+  try {
+    const { ensureDb } = await import('../economy/coins.js');
+    await ensureDb();
+    const db = (await import('../economy/coins.js')).getDb();
+    
+    const result = db.exec(`
+      SELECT a.discord_id, a.steam_id, a.balance, a.last_daily,
+             COUNT(i.id) as inventory_count
+      FROM accounts a
+      LEFT JOIN dino_inventory i ON a.discord_id = i.discord_id
+      GROUP BY a.discord_id
+      ORDER BY a.balance DESC
+    `);
+    
+    const players = [];
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        players.push({
+          discord_id: row[0],
+          steam_id: row[1],
+          balance: row[2],
+          last_daily: row[3],
+          inventory_count: row[4]
+        });
+      }
+    }
+    
+    res.json(players);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/database/inventory', async (req, res) => {
+  try {
+    const { ensureInventoryDb } = await import('../economy/inventory.js');
+    await ensureInventoryDb();
+    const db = (await import('../economy/inventory.js')).getDb();
+    
+    const result = db.exec(`
+      SELECT i.*, d.name as dino_name, d.diet as dino_diet
+      FROM dino_inventory i
+      LEFT JOIN dino_prices d ON i.dino_key = d.dino_key
+      ORDER BY i.purchased_at DESC
+    `);
+    
+    const items = [];
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        const obj = {};
+        result[0].columns.forEach((col, i) => obj[col] = row[i]);
+        items.push(obj);
+      }
+    }
+    
+    res.json(items);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/database/inventory/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ensureInventoryDb } = await import('../economy/inventory.js');
+    await ensureInventoryDb();
+    const db = (await import('../economy/inventory.js')).getDb();
+    db.run('DELETE FROM dino_inventory WHERE id = ?', [id]);
+    (await import('../economy/inventory.js')).saveDatabase();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/database/mutations', async (req, res) => {
+  try {
+    const { MUTATION_INFO, DIET_MUTATIONS } = await import('../economy/dinos.js');
+    const list = Object.entries(MUTATION_INFO).map(([key, info]) => ({
+      key,
+      name: info.name,
+      diet: info.diet,
+      desc: info.desc,
+      value: info.value
+    }));
+    res.json(list);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/database/mutations/:key', async (req, res) => {
+  try {
+    const { key } = req.params;
+    const { price, enabled } = req.body;
+    const { ensureInventoryDb } = await import('../economy/inventory.js');
+    await ensureInventoryDb();
+    const db = (await import('../economy/inventory.js')).getDb();
+    db.run('INSERT OR REPLACE INTO mutation_prices (mutation_key, price, enabled) VALUES (?, ?, ?)',
+      [key, parseInt(price), enabled ? 1 : 0]);
+    (await import('../economy/inventory.js')).saveDatabase();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/database/mutation-prices', async (req, res) => {
+  try {
+    const { ensureInventoryDb } = await import('../economy/inventory.js');
+    await ensureInventoryDb();
+    const db = (await import('../economy/inventory.js')).getDb();
+    const result = db.exec('SELECT mutation_key, price, enabled FROM mutation_prices ORDER BY mutation_key');
+    const prices = {};
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        prices[row[0]] = { price: row[1], enabled: !!row[2] };
+      }
+    }
+    res.json(prices);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 server.listen(PORT, () => {
   console.log(`[Web] RCON Terminal running on http://0.0.0.0:${PORT}`);

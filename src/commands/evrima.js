@@ -2,6 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, But
 import { hasPermission, getUserRole } from '../permissions/roles.js';
 import rconManager from '../rcon/manager.js';
 import { logger } from '../utils/logger.js';
+import { canAfford, spendBalance, getBalance, getSetting } from '../economy/coins.js';
 
 export const data = new SlashCommandBuilder()
   .setName('evrima')
@@ -73,6 +74,32 @@ export async function execute(interaction) {
   }
 
   await interaction.deferReply();
+
+  const subcommand = interaction.options.getSubcommand();
+
+  if (subcommand !== 'help') {
+    const canUse = await canAfford(interaction.user.id, subcommand);
+    if (!canUse) {
+      const balance = await getBalance(interaction.user.id);
+      const cost = await (await import('../economy/coins.js')).getCommandCost(subcommand);
+      const symbol = await getSetting('currency_symbol') || '🪙';
+      const name = await getSetting('currency_name') || 'coins';
+      
+      return interaction.editReply({
+        embeds: [new EmbedBuilder()
+          .setTitle('❌ Insufficient Funds')
+          .setDescription(`This command costs **${cost} ${symbol}**\nYour balance: **${balance} ${name}**\nUse \`/daily\` to earn ${symbol} or \`/balance\` to check your funds.`)
+          .setColor(0xff0000)]
+      });
+    }
+    
+    const costResult = await spendBalance(interaction.user.id, (await (await import('../economy/coins.js')).getCommandCost(subcommand)) || 0, `/${subcommand}`);
+    if (!costResult.success) {
+      return interaction.editReply({
+        embeds: [new EmbedBuilder().setTitle('❌ Transaction Failed').setDescription(costResult.message).setColor(0xff0000)]
+      });
+    }
+  }
 
   try {
     switch (subcommand) {
