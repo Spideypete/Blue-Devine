@@ -12,129 +12,162 @@
       color: #c9d1d9;
       min-height: 100vh;
     }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
-
-    h1 {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #f0f6fc;
-    }
-
-    .subtitle {
-      color: #8b949e;
-      font-size: 14px;
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
-
-    .connection-section {
+    .connection-bar {
       background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .connection-section h2 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #f0f6fc;
-    }
-
-    .connection-fields {
+      border-bottom: 1px solid #30363d;
+      padding: 12px 16px;
       display: flex;
       gap: 8px;
-      flex-wrap: wrap;
       align-items: center;
+      flex-wrap: wrap;
     }
-
-    .connection-fields input {
-      padding: 8px 12px;
+    .connection-bar h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-right: 12px;
+    }
+    .connection-bar input {
+      padding: 6px 10px;
       background: #0d1117;
       border: 1px solid #30363d;
       color: #c9d1d9;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 13px;
       font-family: inherit;
+      min-width: 120px;
     }
-
-    .connection-fields input:focus {
+    .connection-bar input:focus {
       outline: none;
       border-color: #58a6ff;
     }
-
-    .connection-fields button {
-      padding: 8px 16px;
+    .connection-bar button {
+      padding: 6px 14px;
       background: #238636;
       border: none;
       color: white;
       cursor: pointer;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 13px;
       font-family: inherit;
       font-weight: 500;
     }
-
-    .connection-fields button:hover {
+    .connection-bar button:hover {
       background: #2ea043;
     }
-
-    .connection-fields button.ghost {
+    .connection-bar button.ghost {
       background: transparent;
       border: 1px solid #30363d;
       color: #8b949e;
-      font-weight: 400;
     }
-
-    .connection-fields button.ghost:hover {
+    .connection-bar button.ghost:hover {
       border-color: #f85149;
       color: #f85149;
     }
-
-    .command-form-section {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 20px;
+    .main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
     }
-
-    .command-form-section h3 {
+    .sidebar {
+      width: 260px;
+      background: #161b22;
+      border-right: 1px solid #30363d;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .sidebar-header {
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #30363d;
+    }
+    .cmd-category {
+      border-bottom: 1px solid #21262d;
+    }
+    .cmd-category-header {
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      background: #0d1117;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cmd-category-header:hover {
+      color: #c9d1d9;
+    }
+    .cmd-list {
+      padding: 4px 0;
+    }
+    .cmd-link {
+      display: block;
+      padding: 6px 16px 6px 24px;
+      color: #c9d1d9;
+      font-size: 13px;
+      text-decoration: none;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+    }
+    .cmd-link:hover {
+      background: #1f2937;
+      color: #58a6ff;
+      border-left-color: #58a6ff;
+    }
+    .cmd-link.active {
+      background: #1f2937;
+      color: #58a6ff;
+      border-left-color: #58a6ff;
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .command-panel {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 16px;
+      display: none;
+    }
+    .command-panel.visible {
+      display: block;
+    }
+    .command-panel h3 {
       font-size: 16px;
       font-weight: 600;
       margin-bottom: 4px;
       color: #f0f6fc;
     }
-
-    .command-form-section .desc {
+    .command-panel .desc {
       color: #8b949e;
-      font-size: 14px;
+      font-size: 13px;
       margin-bottom: 12px;
     }
-
-    .command-form-section .form-row {
-      display: flex;
-      gap: 8px;
+    .command-panel .form-row {
       margin-bottom: 8px;
     }
-
-    .command-form-section label {
+    .command-panel label {
+      display: block;
       font-size: 12px;
       color: #8b949e;
       font-weight: 500;
       margin-bottom: 4px;
-      display: block;
     }
-
-    .command-form-section input {
+    .command-panel input {
       width: 100%;
+      max-width: 400px;
       padding: 8px 12px;
       background: #0d1117;
       border: 1px solid #30363d;
@@ -143,17 +176,12 @@
       font-size: 14px;
       font-family: inherit;
     }
-
-    .command-form-section input:focus {
+    .command-panel input:focus {
       outline: none;
       border-color: #58a6ff;
     }
-
-    .command-form-section .form-actions {
-      margin-top: 12px;
-    }
-
-    .command-form-section button {
+    .command-panel button {
+      margin-top: 8px;
       padding: 8px 16px;
       background: #238636;
       border: none;
@@ -164,92 +192,43 @@
       font-family: inherit;
       font-weight: 500;
     }
-
-    .command-form-section button:hover {
+    .command-panel button:hover {
       background: #2ea043;
     }
-
-    .command-form-section button:disabled {
+    .command-panel button:disabled {
       background: #30363d;
       color: #8b949e;
       cursor: not-allowed;
     }
-
-    .command-form-section .connect-msg {
+    .command-panel .connect-msg {
       color: #8b949e;
       font-size: 13px;
       font-style: italic;
+      margin-top: 8px;
     }
-
-    .commands-section {
-      margin-bottom: 20px;
+    .terminal-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #0d1117;
     }
-
-    .commands-section h2 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #f0f6fc;
-    }
-
-    .cmd-category {
-      margin-bottom: 12px;
-    }
-
-    .cmd-category h3 {
-      font-size: 13px;
-      font-weight: 600;
-      color: #8b949e;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .cmd-list {
-      line-height: 1.8;
-      margin-bottom: 8px;
-    }
-
-    .cmd-link {
-      color: #c9d1d9;
-      font-size: 13px;
-      font-family: inherit;
-      text-decoration: none;
-      cursor: pointer;
-      border-bottom: 1px solid transparent;
-      transition: color 0.1s, border-color 0.1s;
-      display: inline;
-      padding: 0;
-      margin: 0;
-      line-height: inherit;
-    }
-
-    .cmd-link:hover {
-      color: #58a6ff;
-      border-bottom-color: #58a6ff;
-    }
-
-    .terminal-section {
-      margin-bottom: 20px;
-    }
-
     .terminal-header {
+      padding: 8px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      border-bottom: 1px solid #30363d;
     }
-
     .terminal-header h2 {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
       color: #8b949e;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-
     .terminal-header button {
-      padding: 4px 12px;
+      padding: 4px 10px;
       background: #30363d;
       border: none;
       color: #c9d1d9;
@@ -258,35 +237,26 @@
       font-size: 12px;
       font-family: inherit;
     }
-
     .terminal-header button:hover {
       background: #484f58;
     }
-
     .terminal {
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      padding: 12px;
-      min-height: 300px;
-      max-height: 500px;
+      flex: 1;
       overflow-y: auto;
+      padding: 12px;
       font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
       font-size: 13px;
       line-height: 1.6;
     }
-
     .terminal .placeholder {
       color: #8b949e;
       font-style: italic;
     }
-
     .terminal .line {
       margin-bottom: 2px;
       white-space: pre-wrap;
       word-wrap: break-word;
     }
-
     .terminal .outgoing { color: #d29922; }
     .terminal .response { color: #3fb950; }
     .terminal .error { color: #f85149; }
@@ -295,36 +265,33 @@
       color: #6e7681;
       margin-right: 8px;
     }
-
     .command-bar {
+      background: #161b22;
+      border-top: 1px solid #30363d;
+      padding: 10px 16px;
       display: flex;
       gap: 8px;
-      margin-top: 12px;
     }
-
     .command-bar input {
       flex: 1;
-      padding: 10px 12px;
-      background: #161b22;
+      padding: 8px 12px;
+      background: #0d1117;
       border: 1px solid #30363d;
       color: #c9d1d9;
       border-radius: 6px;
       font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
       font-size: 14px;
     }
-
     .command-bar input:focus {
       outline: none;
       border-color: #58a6ff;
     }
-
     .command-bar input:disabled {
       background: #21262d;
       color: #8b949e;
     }
-
     .command-bar button {
-      padding: 10px 20px;
+      padding: 8px 16px;
       background: #238636;
       border: none;
       color: white;
@@ -334,73 +301,122 @@
       font-family: inherit;
       font-weight: 500;
     }
-
     .command-bar button:hover {
       background: #2ea043;
     }
-
     .command-bar button:disabled {
       background: #30363d;
       color: #8b949e;
       cursor: not-allowed;
     }
-
     .scrollbar::-webkit-scrollbar {
       width: 8px;
     }
-
     .scrollbar::-webkit-scrollbar-track {
       background: transparent;
     }
-
     .scrollbar::-webkit-scrollbar-thumb {
       background: #30363d;
       border-radius: 4px;
     }
-
     .scrollbar::-webkit-scrollbar-thumb:hover {
       background: #484f58;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>The Isle RCON Terminal</h1>
-    <p class="subtitle">Live browser RCON client for The Isle Evrima dedicated servers. Connect with your server's IP, RCON port, and password. Run any of the 27 admin commands GÇö playerlist, announce, kick, ban, save, AI toggle, whitelist GÇö and see the server's response in real time.</p>
-
-    <div class="connection-section">
-      <h2>Server Connection</h2>
-      <div class="connection-fields">
-        <input type="text" id="host" placeholder="Host / IP">
-        <input type="text" id="port" placeholder="RCON Port" value="8888" style="width: 120px;">
-        <input type="text" id="password" placeholder="RCON Password" type="password">
-        <button id="connectBtn" onclick="connect()">Connect</button>
-        <button id="forgetBtn" class="ghost" onclick="forgetConnection()">Forget</button>
-        <button id="disconnectBtn" class="ghost" onclick="disconnect()" style="display:none;">Disconnect</button>
-      </div>
+  <div class="app">
+    <div class="connection-bar">
+      <h1>The Isle RCON Terminal</h1>
+      <input type="text" id="host" placeholder="Host / IP">
+      <input type="text" id="port" placeholder="RCON Port" value="8888">
+      <input type="password" id="password" placeholder="RCON Password">
+      <button id="connectBtn" onclick="connect()">Connect</button>
+      <button id="forgetBtn" class="ghost" onclick="forgetConnection()">Forget</button>
+      <button id="disconnectBtn" class="ghost" onclick="disconnect()" style="display:none;">Disconnect</button>
     </div>
 
-    <div class="command-form-section" id="commandForm" style="display:none;">
-      <h3 id="formTitle">announce</h3>
-      <p class="desc" id="formDesc">Broadcast a message to all players</p>
-      <div id="formFields"></div>
-      <div class="form-actions">
-        <button id="formSendBtn" onclick="sendFromForm()">Send Command</button>
+    <div class="main-layout">
+      <div class="sidebar scrollbar" id="sidebar">
+        <div class="sidebar-header">Commands</div>
+        <div class="cmd-category">
+          <div class="cmd-category-header">Communication</div>
+          <div class="cmd-list">
+            <a class="cmd-link" href="#" onclick="showCommand('announce',['message'],'Broadcast a message to all players','Communication');return false">announce</a>
+            <a class="cmd-link" href="#" onclick="showCommand('directmessage',['player','message'],'Send a direct message to a player','Communication');return false">directmessage</a>
+            <a class="cmd-link" href="#" onclick="showCommand('toggleglobalchat',['0/1'],'Disable/Enable global chat','Communication');return false">toggleglobalchat</a>
+          </div>
+        </div>
+        <div class="cmd-category">
+          <div class="cmd-category-header">Info</div>
+          <div class="cmd-list">
+            <a class="cmd-link" href="#" onclick="showCommand('serverdetails',[],'Show current server configuration','Info');return false">serverdetails</a>
+            <a class="cmd-link" href="#" onclick="showCommand('playerlist',[],'List all connected players','Info');return false">playerlist</a>
+            <a class="cmd-link" href="#" onclick="showCommand('getplayerdata',['SteamID64?'],'Get player class, growth, health, location','Info');return false">getplayerdata</a>
+            <a class="cmd-link" href="#" onclick="showCommand('getqueuestatus',[],'Show queue status when server is full','Info');return false">getqueuestatus</a>
+            <a class="cmd-link" href="#" onclick="showCommand('getplayables',[],'List currently playable species','Info');return false">getplayables</a>
+          </div>
+        </div>
+        <div class="cmd-category">
+          <div class="cmd-category-header">Moderation</div>
+          <div class="cmd-list">
+            <a class="cmd-link" href="#" onclick="showCommand('kick',['player','reason'],'Kick a player','Moderation');return false">kick</a>
+            <a class="cmd-link" href="#" onclick="showCommand('ban',['player','SteamID64','reason','duration'],'Ban a player','Moderation');return false">ban</a>
+            <a class="cmd-link" href="#" onclick="showCommand('slay',['SteamID64'],'Instantly kill a player dinosaur','Moderation');return false">slay</a>
+            <a class="cmd-link" href="#" onclick="showCommand('togglewhitelist',[],'Enable/disable whitelist mode','Moderation');return false">togglewhitelist</a>
+            <a class="cmd-link" href="#" onclick="showCommand('addwhitelist',['playerId'],'Add player(s) to whitelist','Moderation');return false">addwhitelist</a>
+            <a class="cmd-link" href="#" onclick="showCommand('removewhitelist',['playerId'],'Remove player(s) from whitelist','Moderation');return false">removewhitelist</a>
+          </div>
+        </div>
+        <div class="cmd-category">
+          <div class="cmd-category-header">Server</div>
+          <div class="cmd-list">
+            <a class="cmd-link" href="#" onclick="showCommand('save',['backupName?'],'Force a save (optional named backup)','Server');return false">save</a>
+            <a class="cmd-link" href="#" onclick="showCommand('pause',[],'Pause/unpause the server','Server');return false">pause</a>
+            <a class="cmd-link" href="#" onclick="showCommand('custom',['command'],'Send custom command','Server');return false">custom</a>
+            <a class="cmd-link" href="#" onclick="showCommand('togglenetupdatedistancechecks',['0/1'],'Toggle network update distance checks','Server');return false">togglenetupdatedistancechecks</a>
+          </div>
+        </div>
+        <div class="cmd-category">
+          <div class="cmd-category-header">World</div>
+          <div class="cmd-list">
+            <a class="cmd-link" href="#" onclick="showCommand('wipecorpses',[],'Remove all corpses from the map','World');return false">wipecorpses</a>
+            <a class="cmd-link" href="#" onclick="showCommand('toggleai',['0/1'],'Disable/Enable AI spawns','World');return false">toggleai</a>
+            <a class="cmd-link" href="#" onclick="showCommand('disableaiclasses',['Class1,Class2'],'Block specific AI species from spawning','World');return false">disableaiclasses</a>
+            <a class="cmd-link" href="#" onclick="showCommand('aidensity',['0.0-1.0'],'Set AI spawn density','World');return false">aidensity</a>
+            <a class="cmd-link" href="#" onclick="showCommand('toggleailearning',['0/1'],'Toggle AI learning','World');return false">toggleailearning</a>
+            <a class="cmd-link" href="#" onclick="showCommand('togglemigrations',['0/1'],'Toggle migration zones','World');return false">togglemigrations</a>
+          </div>
+        </div>
+        <div class="cmd-category">
+          <div class="cmd-category-header">Admin</div>
+          <div class="cmd-list">
+            <a class="cmd-link" href="#" onclick="showCommand('updateplayables',['Class:enabled/disabled'],'Update which species are playable','Admin');return false">updateplayables</a>
+            <a class="cmd-link" href="#" onclick="showCommand('togglehumans',['0/1'],'Disable/Enable humans','Admin');return false">togglehumans</a>
+            <a class="cmd-link" href="#" onclick="showCommand('togglegrowthmultiplier',[],'Toggle growth on/off without restart','Admin');return false">togglegrowthmultiplier</a>
+            <a class="cmd-link" href="#" onclick="showCommand('setgrowthmultiplier',['value'],'Change growth speed live (e.g., 2.0)','Admin');return false">setgrowthmultiplier</a>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="commands-section">
-      <h2>Commands</h2>
-      <div class="cmd-category"><h3>Communication</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('announce',['message'],'Broadcast a message to all players');return false">announce</a><a class="cmd-link" href="#" onclick="showCommandForm('directmessage',['player','message'],'Send a direct message to a player');return false">directmessage</a><a class="cmd-link" href="#" onclick="showCommandForm('toggleglobalchat',['0/1'],'Disable/Enable global chat');return false">toggleglobalchat</a></div></div><div class="cmd-category"><h3>Info</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('serverdetails',[],'Show current server configuration');return false">serverdetails</a><a class="cmd-link" href="#" onclick="showCommandForm('playerlist',[],'List all connected players');return false">playerlist</a><a class="cmd-link" href="#" onclick="showCommandForm('getplayerdata',['SteamID64?'],'Get player class, growth, health, location');return false">getplayerdata</a><a class="cmd-link" href="#" onclick="showCommandForm('getqueuestatus',[],'Show queue status when server is full');return false">getqueuestatus</a><a class="cmd-link" href="#" onclick="showCommandForm('getplayables',[],'List currently playable species');return false">getplayables</a></div></div><div class="cmd-category"><h3>Moderation</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('kick',['player','reason'],'Kick a player');return false">kick</a><a class="cmd-link" href="#" onclick="showCommandForm('ban',['player','SteamID64','reason','duration'],'Ban a player');return false">ban</a><a class="cmd-link" href="#" onclick="showCommandForm('slay',['SteamID64'],'Instantly kill a player dinosaur');return false">slay</a><a class="cmd-link" href="#" onclick="showCommandForm('togglewhitelist',[],'Enable/disable whitelist mode');return false">togglewhitelist</a><a class="cmd-link" href="#" onclick="showCommandForm('addwhitelist',['playerId'],'Add player(s) to whitelist');return false">addwhitelist</a><a class="cmd-link" href="#" onclick="showCommandForm('removewhitelist',['playerId'],'Remove player(s) from whitelist');return false">removewhitelist</a></div></div><div class="cmd-category"><h3>Server</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('save',['backupName?'],'Force a save (optional named backup)');return false">save</a><a class="cmd-link" href="#" onclick="showCommandForm('pause',[],'Pause/unpause the server');return false">pause</a><a class="cmd-link" href="#" onclick="showCommandForm('custom',['command'],'Send custom command');return false">custom</a><a class="cmd-link" href="#" onclick="showCommandForm('togglenetupdatedistancechecks',['0/1'],'Toggle network update distance checks');return false">togglenetupdatedistancechecks</a></div></div><div class="cmd-category"><h3>World</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('wipecorpses',[],'Remove all corpses from the map');return false">wipecorpses</a><a class="cmd-link" href="#" onclick="showCommandForm('toggleai',['0/1'],'Disable/Enable AI spawns');return false">toggleai</a><a class="cmd-link" href="#" onclick="showCommandForm('disableaiclasses',['Class1,Class2'],'Block specific AI species from spawning');return false">disableaiclasses</a><a class="cmd-link" href="#" onclick="showCommandForm('aidensity',['0.0-1.0'],'Set AI spawn density');return false">aidensity</a><a class="cmd-link" href="#" onclick="showCommandForm('toggleailearning',['0/1'],'Toggle AI learning');return false">toggleailearning</a><a class="cmd-link" href="#" onclick="showCommandForm('togglemigrations',['0/1'],'Toggle migration zones');return false">togglemigrations</a></div></div><div class="cmd-category"><h3>Admin</h3><div class="cmd-list"><a class="cmd-link" href="#" onclick="showCommandForm('updateplayables',['Class:enabled/disabled'],'Update which species are playable');return false">updateplayables</a><a class="cmd-link" href="#" onclick="showCommandForm('togglegrowthmultiplier',[],'Toggle growth on/off without restart');return false">togglegrowthmultiplier</a><a class="cmd-link" href="#" onclick="showCommandForm('setgrowthmultiplier',['value'],'Change growth speed live (e.g., 2.0)');return false">setgrowthmultiplier</a><a class="cmd-link" href="#" onclick="showCommandForm('togglehumans',['0/1'],'Disable/Enable humans');return false">togglehumans</a></div></div>
-    </div>
+      <div class="content">
+        <div class="command-panel" id="commandPanel">
+          <h3 id="formTitle">announce</h3>
+          <p class="desc" id="formDesc">Broadcast a message to all players</p>
+          <div id="formFields"></div>
+          <button id="formSendBtn" onclick="sendFromForm()">Send Command</button>
+          <p class="connect-msg" id="connectMsg">Connect to your server first.</p>
+        </div>
 
-    <div class="terminal-section">
-      <div class="terminal-header">
-        <h2>Terminal Output</h2>
-        <button onclick="clearTerminal()">Clear</button>
-      </div>
-      <div class="terminal scrollbar" id="terminal">
-        <div class="placeholder">Connect and send a command to see output hereGÇª</div>
+        <div class="terminal-panel">
+          <div class="terminal-header">
+            <h2>Terminal Output</h2>
+            <button onclick="clearTerminal()">Clear</button>
+          </div>
+          <div class="terminal scrollbar" id="terminal">
+            <div class="placeholder">Connect and send a command to see output here?</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -412,10 +428,14 @@
 
   <script>
     let currentCommand = null;
+    let currentArgs = [];
+    let connected = false;
+    let ws = null;
 
-    function showCommandForm(name, args, desc) {
-      currentCommand = { name, args, desc };
-      const form = document.getElementById('commandForm');
+    function showCommand(name, args, desc, category) {
+      currentCommand = name;
+      currentArgs = args;
+      const panel = document.getElementById('commandPanel');
       document.getElementById('formTitle').textContent = name;
       document.getElementById('formDesc').textContent = desc;
       const fields = document.getElementById('formFields');
@@ -426,7 +446,7 @@
       } else {
         for (const arg of args) {
           const div = document.createElement('div');
-          div.style.marginBottom = '8px';
+          div.className = 'form-row';
           const label = document.createElement('label');
           label.textContent = arg;
           const input = document.createElement('input');
@@ -444,21 +464,22 @@
         fields.appendChild(msg);
       }
 
-      form.style.display = 'block';
-      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelectorAll('.cmd-link').forEach(el => el.classList.remove('active'));
+      event.target.classList.add('active');
+      panel.classList.add('visible');
     }
 
     function sendFromForm() {
       if (!currentCommand) return;
       const values = [];
-      for (const arg of currentCommand.args) {
+      for (const arg of currentArgs) {
         const input = document.getElementById('field_' + arg);
         if (input && input.value.trim()) {
           values.push(input.value.trim());
         }
       }
       const args = values.join(',');
-      const cmdStr = args ? `${currentCommand.name} ${args}` : currentCommand.name;
+      const cmdStr = args ? `${currentCommand} ${args}` : currentCommand;
       document.getElementById('commandInput').value = cmdStr;
       sendCommand();
     }
@@ -571,7 +592,7 @@
     }
 
     function clearTerminal() {
-      document.getElementById('terminal').innerHTML = '<div class="placeholder">Connect and send a command to see output hereGÇª</div>';
+      document.getElementById('terminal').innerHTML = '<div class="placeholder">Connect and send a command to see output here?</div>';
     }
 
     function saveConnection() {
