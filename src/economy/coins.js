@@ -57,6 +57,14 @@ async function initDatabase() {
   `);
 
   db.run(`
+    CREATE TABLE IF NOT EXISTS command_roles (
+      command_name TEXT NOT NULL,
+      role_id TEXT NOT NULL,
+      PRIMARY KEY (command_name, role_id)
+    )
+  `);
+
+  db.run(`
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT
@@ -235,6 +243,32 @@ export async function setCommandCost(commandName, cost, enabled = true) {
     [commandName, cost, enabled ? 1 : 0, commandName, commandName]
   );
   saveDatabase();
+}
+
+export async function getAllowedRoles(commandName) {
+  await ensureDb();
+  const result = getDb().exec('SELECT role_id FROM command_roles WHERE command_name = ?', [commandName]);
+  if (result.length > 0) {
+    return result[0].values.map(row => row[0]);
+  }
+  return [];
+}
+
+export async function setAllowedRoles(commandName, roleIds) {
+  await ensureDb();
+  getDb().run('DELETE FROM command_roles WHERE command_name = ?', [commandName]);
+  for (const roleId of roleIds) {
+    if (roleId && roleId.trim()) {
+      getDb().run('INSERT INTO command_roles (command_name, role_id) VALUES (?, ?)', [commandName, roleId.trim()]);
+    }
+  }
+  saveDatabase();
+}
+
+export async function hasRolePermission(commandName, memberRoles) {
+  const allowedRoles = await getAllowedRoles(commandName);
+  if (allowedRoles.length === 0) return true;
+  return memberRoles.some(roleId => allowedRoles.includes(roleId));
 }
 
 export async function getSetting(key) {

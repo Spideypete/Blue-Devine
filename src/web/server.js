@@ -193,11 +193,50 @@ app.post('/api/economy/cost', async (req, res) => {
   }
 });
 
+app.get('/api/economy/costs', async (req, res) => {
+  try {
+    await ensureDb();
+    const db = getCoinsDb();
+    const result = db.exec('SELECT command_name, cost, enabled, description FROM command_costs ORDER BY command_name');
+    const costs = {};
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        const [cmd, cost, enabled, desc] = row;
+        costs[cmd] = { cost, enabled: !!enabled, description: desc };
+      }
+    }
+    res.json(costs);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post('/api/economy/cost/toggle', async (req, res) => {
   try {
     const { command } = req.body;
     const current = await getCommandCost(command);
     await setCommandCost(command, current, !current);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/economy/command-roles/:command', async (req, res) => {
+  try {
+    const { getAllowedRoles } = await import('../economy/coins.js');
+    const roles = await getAllowedRoles(req.params.command);
+    res.json(roles);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/economy/command-roles/:command', async (req, res) => {
+  try {
+    const { setAllowedRoles } = await import('../economy/coins.js');
+    const { roles } = req.body;
+    await setAllowedRoles(req.params.command, Array.isArray(roles) ? roles : []);
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });

@@ -10,7 +10,7 @@ export const data = new SlashCommandBuilder()
   .setDescription('Buy a dinosaur with coins');
 
 export async function execute(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: 64 });
   const userId = interaction.user.id;
   buyState.delete(userId);
   
@@ -225,21 +225,22 @@ async function buildMutationView(userId) {
 
 async function buildSummaryView(userId) {
   const state = buyState.get(userId);
-  const dino = DINOS[state.dinoKey];
+  const dino = DINOS[state.dinoKey] || { name: 'Unknown', diet: '?' };
   const price = await getDinoPrice(state.dinoKey);
   const balance = await getBalance(userId);
   const symbol = await getSetting('currency_symbol') || '🪙';
-  const muts = state.mutations.filter(Boolean).map(m => MUTATION_INFO[m]?.name || m).join(', ') || 'None';
+  const muts = (state.mutations || []).filter(Boolean).map(m => MUTATION_INFO[m]?.name || m).join(', ') || 'None';
+  const afterBalance = (balance - price);
   
   const embed = new EmbedBuilder().setTitle('📋 Summary').setDescription('Confirm purchase')
     .addFields(
-      { name: 'Species', value: dino.name, inline: true },
-      { name: 'Gender', value: state.gender === 'male' ? '♂ Male' : '♀ Female', inline: true },
-      { name: 'Growth', value: `${state.growth}%`, inline: true },
+      { name: 'Species', value: dino.name || 'Unknown', inline: true },
+      { name: 'Gender', value: state.gender === 'female' ? '♀ Female' : '♂ Male', inline: true },
+      { name: 'Growth', value: `${state.growth || 0}%`, inline: true },
       { name: 'Prime', value: state.isPrime ? '✅' : '❌', inline: true },
-      { name: 'Mutations', value: muts, inline: false },
+      { name: 'Mutations', value: muts || 'None', inline: false },
       { name: '💰 Cost', value: `${price} ${symbol}`, inline: true },
-      { name: 'After', value: `${balance - price} ${symbol}`, inline: true }
+      { name: 'After', value: `${Math.max(0, afterBalance)} ${symbol}`, inline: true }
     )
     .setColor(0xf39c12);
   const rows = [new ActionRowBuilder().addComponents(

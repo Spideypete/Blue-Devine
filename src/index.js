@@ -83,7 +83,7 @@ client.on('interactionCreate', async (interaction) => {
       if (interaction.replied || interaction.deferred) {
         await interaction.editReply({ embeds: [new (await import('discord.js')).EmbedBuilder().setTitle('❌ Error').setDescription('An error occurred').setColor(0xff0000)] });
       } else {
-        await interaction.reply({ embeds: [new (await import('discord.js')).EmbedBuilder().setTitle('❌ Error').setDescription('An error occurred').setColor(0xff0000)], ephemeral: true });
+        await interaction.reply({ embeds: [new (await import('discord.js')).EmbedBuilder().setTitle('❌ Error').setDescription('An error occurred').setColor(0xff0000)], flags: 64 });
       }
     } catch (e) {
       // ignore
@@ -92,3 +92,4 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+

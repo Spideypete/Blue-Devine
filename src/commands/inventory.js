@@ -9,7 +9,7 @@ export const data = new SlashCommandBuilder()
   .setDescription('View your purchased dinosaurs');
 
 export async function execute(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: 64 });
   
   const inventory = await getInventory(interaction.user.id);
   const symbol = await getSetting('currency_symbol') || '🪙';
@@ -99,7 +99,7 @@ async function showInventoryPage(interaction, items, page, symbol, totalPages) {
 }
 
 async function handleGrow(interaction, itemId, userId) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: 64 });
   
   const item = await getDinoById(itemId);
   if (!item) {
@@ -170,7 +170,7 @@ async function handleGrow(interaction, itemId, userId) {
               .setTitle('✅ Growth Complete!')
               .setDescription(`Your **${dino.name}** is now **100% growth**!`)
               .setColor(0x2ecc71)],
-            ephemeral: true
+            flags: 64
           });
         }
       } catch (e) {
@@ -179,7 +179,7 @@ async function handleGrow(interaction, itemId, userId) {
             .setTitle('⚠️ Growth Check')
             .setDescription('Could not verify growth. Check in-game.')
             .setColor(0xffa500)],
-          ephemeral: true
+          flags: 64
         });
       }
     }, 65000);
@@ -210,3 +210,4 @@ function parsePlayerData(raw) {
   }
   return null;
 }
+

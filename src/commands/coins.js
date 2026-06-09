@@ -11,7 +11,7 @@ export const coinCommands = {
       .setName('balance')
       .setDescription('Check your coin balance'),
     execute: async (interaction) => {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: 64 });
       const balance = await getBalance(interaction.user.id);
       const account = await createAccount(interaction.user.id);
       const symbol = await getSetting('currency_symbol') || '🪙';
@@ -31,7 +31,7 @@ export const coinCommands = {
       .setName('daily')
       .setDescription('Claim your daily coins'),
     execute: async (interaction) => {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: 64 });
       await ensureDb();
       const account = await createAccount(interaction.user.id);
       const now = new Date().toISOString();
@@ -73,7 +73,7 @@ export const coinCommands = {
       .setDescription('Link your Steam ID to your Discord account')
       .addStringOption((opt) => opt.setName('steamid').setDescription('Your Steam ID64').setRequired(true)),
     execute: async (interaction) => {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: 64 });
       const steamId = interaction.options.getString('steamid');
       const result = await linkSteam(interaction.user.id, steamId);
       
@@ -129,7 +129,7 @@ export const coinCommands = {
       if (!isOwner && subcommand !== 'costs' && subcommand !== 'settings' && subcommand !== 'leaderboard' && subcommand !== 'history') {
         return interaction.reply({
           embeds: [new EmbedBuilder().setTitle('❌ Access Denied').setDescription('Admin only').setColor(0xff0000)],
-          ephemeral: true
+          flags: 64
         });
       }
       
@@ -189,7 +189,7 @@ async function handleTake(interaction) {
   if (!result.success) {
     return interaction.reply({
       embeds: [new EmbedBuilder().setTitle('❌ Failed').setDescription(result.message).setColor(0xff0000)],
-      ephemeral: true
+      flags: 64
     });
   }
   
@@ -276,7 +276,7 @@ async function handleHistory(interaction) {
   const user = interaction.options.getUser('user');
   const targetId = user ? user.id : interaction.user.id;
   
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: 64 });
   const history = await getTransactionHistory(targetId, 10);
   const symbol = await getSetting('currency_symbol') || '🪙';
   const name = await getSetting('currency_name') || 'coins';
@@ -323,3 +323,4 @@ async function handleLeaderboard(interaction) {
   
   await interaction.reply({ embeds: [embed] });
 }
+

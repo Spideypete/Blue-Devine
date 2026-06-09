@@ -700,15 +700,25 @@
         const symbol = settings.currency_symbol || '🪙';
         const name = settings.currency_name || 'coins';
 
-        let html = '<div class="admin-card"><h3>💰 Command Costs</h3><table><tr><th>Command</th><th>Cost</th><th>Status</th><th>Description</th><th>Action</th></tr>';
+        let html = '<div class="admin-card"><h3>💰 Command Costs & Roles</h3><table><tr><th>Command</th><th>Cost</th><th>Status</th><th>Description</th><th>Allowed Roles (IDs, comma-separated)</th><th>Action</th></tr>';
+        const rolePromises = {};
+        for (const cmd of Object.keys(costs)) {
+          rolePromises[cmd] = fetch('/api/economy/command-roles/' + cmd).then(r => r.json());
+        }
+        const roleResults = await Promise.all(Object.entries(rolePromises).map(async ([cmd, p]) => [cmd, await p]));
+        const roleMap = Object.fromEntries(roleResults);
+        
         for (const [cmd, data] of Object.entries(costs)) {
+          const roles = roleMap[cmd] || [];
           html += `<tr>
             <td>/${cmd}</td>
             <td><input type="number" id="cost_${cmd}" value="${data.cost}" style="width:80px"></td>
             <td>${data.enabled ? '✅ Active' : '⛔ Disabled'}</td>
             <td>${data.description || '-'}</td>
+            <td><input type="text" id="roles_${cmd}" value="${roles.join(',')}" placeholder="e.g. 123456,789012" style="width:180px"></td>
             <td>
-              <button onclick="updateCost('${cmd}')">Save</button>
+              <button onclick="updateCost('${cmd}')">Save Cost</button>
+              <button onclick="saveRoles('${cmd}')">Save Roles</button>
               <button class="danger" onclick="toggleCost('${cmd}')">${data.enabled ? 'Disable' : 'Enable'}</button>
             </td>
           </tr>`;
@@ -786,6 +796,17 @@
         body: JSON.stringify({ command })
       });
       loadCoinCosts();
+    }
+
+    async function saveRoles(command) {
+      const input = document.getElementById('roles_' + command);
+      const roles = input.value.split(',').map(s => s.trim()).filter(Boolean);
+      await fetch('/api/economy/command-roles/' + command, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roles })
+      });
+      appendLine(`Updated /${command} allowed roles`, 'info');
     }
 
     async function updateSettings() {

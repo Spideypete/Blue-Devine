@@ -2,7 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, But
 import { hasPermission, getUserRole } from '../permissions/roles.js';
 import rconManager from '../rcon/manager.js';
 import { logger } from '../utils/logger.js';
-import { canAfford, spendBalance, getBalance, getSetting } from '../economy/coins.js';
+import { canAfford, spendBalance, getBalance, getSetting, hasRolePermission } from '../economy/coins.js';
 
 export const data = new SlashCommandBuilder()
   .setName('evrima')
@@ -56,8 +56,25 @@ export async function execute(interaction) {
           .setDescription('You do not have permission to use this command.')
           .setColor(0xff0000),
       ],
-      ephemeral: true,
+      flags: 64,
     });
+  }
+
+  const memberRoleIds = interaction.member.roles.cache.map(r => r.id);
+  const allowed = await hasRolePermission(subcommand, memberRoleIds);
+  if (!allowed) {
+    const allowedRoles = await getAllowedRoles(subcommand);
+    if (allowedRoles.length > 0) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle('❌ Role Restricted')
+            .setDescription(`This command requires one of these roles: ${allowedRoles.map(id => `<@&${id}>`).join(', ')}`)
+            .setColor(0xff0000),
+        ],
+        flags: 64,
+      });
+    }
   }
 
   const { rateLimiter } = await import('../utils/rateLimiter.js');
@@ -69,7 +86,7 @@ export async function execute(interaction) {
           .setDescription(`Please wait ${rateLimiter.getRemainingTime(interaction.user.id)}s before using another command.`)
           .setColor(0xffa500),
       ],
-      ephemeral: true,
+      flags: 64,
     });
   }
 
@@ -412,3 +429,4 @@ export async function handleButtonInteraction(interaction) {
     });
   }
 }
+
