@@ -67,7 +67,6 @@ export const MUTATION_INFO = {
 };
 
 export const DINOS = {
-  // Carnivores
   tyrannosaurus: { name: 'Tyrannosaurus', diet: 'carnivore', hasPrime: true },
   allosaurus: { name: 'Allosaurus', diet: 'carnivore', hasPrime: true },
   carnotaurus: { name: 'Carnotaurus', diet: 'carnivore', hasPrime: true },
@@ -79,7 +78,6 @@ export const DINOS = {
   pteranodon: { name: 'Pteranodon', diet: 'carnivore', hasPrime: true },
   troodon: { name: 'Troodon', diet: 'carnivore', hasPrime: true },
   austroraptor: { name: 'Austroraptor', diet: 'carnivore', hasPrime: false },
-  // Herbivores
   triceratops: { name: 'Triceratops', diet: 'herbivore', hasPrime: true },
   stegosaurus: { name: 'Stegosaurus', diet: 'herbivore', hasPrime: true },
   maiasaura: { name: 'Maiasaura', diet: 'herbivore', hasPrime: true },
@@ -89,22 +87,10 @@ export const DINOS = {
   pachycephalosaurus: { name: 'Pachycephalosaurus', diet: 'herbivore', hasPrime: true },
   dryosaurus: { name: 'Dryosaurus', diet: 'herbivore', hasPrime: true },
   hypsilophodon: { name: 'Hypsilophodon', diet: 'herbivore', hasPrime: true },
-  // Omnivores
   beipiaosaurus: { name: 'Beipiaosaurus', diet: 'omnivore', hasPrime: true },
   gallimimus: { name: 'Gallimimus', diet: 'omnivore', hasPrime: true },
   human: { name: 'Human', diet: 'omnivore', hasPrime: false },
   zombie: { name: 'Zombie Dinosaur', diet: 'omnivore', hasPrime: false },
-  baryonyx: { name: 'Baryonyx', diet: 'omnivore', hasPrime: true },
-  oviraptor: { name: 'Oviraptor', diet: 'omnivore', hasPrime: true },
-  camarasaurus: { name: 'Camarasaurus', diet: 'omnivore', hasPrime: true },
-  quetzalcoatlus: { name: 'Quetzalcoatlus', diet: 'omnivore', hasPrime: true },
-  parasaurolophus: { name: 'Parasaurolophus', diet: 'omnivore', hasPrime: true },
-  spinosaurus: { name: 'Spinosaurus', diet: 'omnivore', hasPrime: true },
-  avaceratops: { name: 'Avaceratops', diet: 'omnivore', hasPrime: true },
-  anklyosaurus: { name: 'Anklyosaurus', diet: 'omnivore', hasPrime: true },
-  suchomimus: { name: 'Suchomimus', diet: 'omnivore', hasPrime: true },
-  giganotosaurus: { name: 'Giganotosaurus', diet: 'omnivore', hasPrime: true },
-  therizinosaurus: { name: 'Therizinosaurus', diet: 'omnivore', hasPrime: true },
 };
 
 export const GROWTH_OPTIONS = [40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
