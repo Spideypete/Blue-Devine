@@ -17,8 +17,18 @@ export async function execute(interaction) {
   buyState.set(userId, { step: 'species', dinoKey: null, gender: null, growth: null, isPrime: false, mutations: [null,null,null,null], speciesPage: 0 });
   
   const view = buildSpeciesView(userId);
-  const msg = await interaction.editReply({ embeds: [view.embed], components: view.components });
-  buyState.get(userId).msgId = msg.id;
+  
+  try {
+    const msg = await interaction.editReply({ embeds: [view.embed], components: view.components });
+    buyState.get(userId).msgId = msg.id;
+  } catch (err) {
+    console.error('[Buy] Failed to send species view:', err);
+    console.error('[Buy] Embed data:', JSON.stringify(view.embed.toJSON(), null, 2));
+    return interaction.editReply({
+      embeds: [new EmbedBuilder().setTitle('❌ Error').setDescription('Failed to load dinosaur list. Please try again.').setColor(0xff0000)],
+      components: []
+    });
+  }
   
   const collector = msg.createMessageComponentCollector({ time: 300000, filter: i => i.user.id === userId });
   
