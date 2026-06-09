@@ -818,7 +818,8 @@
         ]);
         
         const dinos = await dinosRes.json();
-        const players = await playersRes.json();
+        const playersRaw = await playersRes.json();
+        const players = Array.isArray(playersRaw) ? playersRaw : [];
         const inventory = await inventoryRes.json();
 
         let html = '<div class="admin-card"><h3>🦕 Dinos & Prices</h3><table><tr><th>Species</th><th>Diet</th><th>Prime</th><th>Price</th><th>Enabled</th><th>Action</th></tr>';

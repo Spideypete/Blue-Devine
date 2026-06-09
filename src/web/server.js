@@ -320,9 +320,10 @@ app.get('/api/database/players', async (req, res) => {
       }
     }
     
-    res.json(players);
+    res.json(players || []);
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error('[API] /api/database/players error:', e);
+    res.json([]);
   }
 });
 

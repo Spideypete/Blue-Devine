@@ -8,6 +8,7 @@ import { coinCommands, handleCoinCommand } from './commands/coins.js';
 import { data as buyData, execute as buyExecute } from './commands/buy.js';
 import { data as inventoryData, execute as inventoryExecute } from './commands/inventory.js';
 import { ensureDb } from './economy/coins.js';
+import { ensureInventoryDb } from './economy/inventory.js';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
@@ -34,6 +35,13 @@ client.once('ready', async () => {
     console.log('[Economy] Database initialized');
   } catch (e) {
     console.error('[Economy] Database init failed:', e);
+  }
+
+  try {
+    await ensureInventoryDb();
+    console.log('[Inventory] Database initialized');
+  } catch (e) {
+    console.error('[Inventory] Database init failed:', e);
   }
 
   try {
