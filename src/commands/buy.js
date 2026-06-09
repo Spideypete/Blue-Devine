@@ -17,15 +17,31 @@ export async function execute(interaction) {
   buyState.set(userId, { step: 'species', dinoKey: null, gender: null, growth: null, isPrime: false, mutations: [null,null,null,null], speciesPage: 0 });
   
   const view = buildSpeciesView(userId);
+  const embed = view.embed || new EmbedBuilder().setTitle('Error').setDescription('Try again').setColor(0xff0000);
+  const components = view.components || [];
   
   try {
-    const msg = await interaction.editReply({ embeds: [view.embed], components: view.components });
+    const msg = await interaction.editReply({ embeds: [embed], components });
     buyState.get(userId).msgId = msg.id;
   } catch (err) {
-    console.error('[Buy] Failed to send species view:', err);
-    console.error('[Buy] Embed data:', JSON.stringify(view.embed.toJSON(), null, 2));
+    console.error('[Buy] Error:', err.message);
+    try {
+      const embedJson = embed.toJSON ? embed.toJSON() : embed;
+      console.error('[Buy] Embed:', JSON.stringify(embedJson).substring(0, 500));
+      for (const row of components) {
+        for (const comp of row.components || []) {
+          if (comp.data && comp.data.options) {
+            for (const opt of comp.data.options) {
+              console.log('[Buy] Option:', JSON.stringify(opt).substring(0, 200));
+            }
+          }
+        }
+      }
+    } catch (logErr) {
+      console.error('[Buy] Log error:', logErr.message);
+    }
     return interaction.editReply({
-      embeds: [new EmbedBuilder().setTitle('❌ Error').setDescription('Failed to load dinosaur list. Please try again.').setColor(0xff0000)],
+      embeds: [new EmbedBuilder().setTitle('❌ Error').setDescription('Failed. Contact admin.').setColor(0xff0000)],
       components: []
     });
   }
