@@ -49,17 +49,18 @@ class EvrimaRCONClient {
         return resolve(true);
       }
 
-      this.socket = new net.Socket();
-      this.socket.setTimeout(this.timeout);
+      const socket = new net.Socket();
+      this.socket = socket;
+      socket.setTimeout(this.timeout);
 
       let resolved = false;
       const cleanup = (err) => {
         if (!resolved) {
           resolved = true;
-          this.socket.removeListener('connect', onConnect);
-          this.socket.removeListener('error', onError);
-          this.socket.removeListener('close', onClose);
-          this.socket.removeListener('timeout', onTimeout);
+          socket.removeListener('connect', onConnect);
+          socket.removeListener('error', onError);
+          socket.removeListener('close', onClose);
+          socket.removeListener('timeout', onTimeout);
           if (err) reject(err);
         }
       };
@@ -74,8 +75,9 @@ class EvrimaRCONClient {
           this._processQueue();
           resolve(true);
         } catch (error) {
-          this.socket.destroy();
+          socket.destroy();
           this.connected = false;
+          this.socket = null;
           cleanup(error);
         }
       };
@@ -96,15 +98,15 @@ class EvrimaRCONClient {
 
       const onTimeout = () => {
         console.log('[RCON] Connection timeout');
-        this.socket.destroy();
+        socket.destroy();
         cleanup(new Error('Connection timeout'));
       };
 
-      this.socket.on('connect', onConnect);
-      this.socket.on('error', onError);
-      this.socket.on('close', onClose);
-      this.socket.on('timeout', onTimeout);
-      this.socket.connect(this.port, this.host);
+      socket.on('connect', onConnect);
+      socket.on('error', onError);
+      socket.on('close', onClose);
+      socket.on('timeout', onTimeout);
+      socket.connect(this.port, this.host);
     });
   }
 
