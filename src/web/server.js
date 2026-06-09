@@ -108,9 +108,13 @@ async function handleConnect(ws, data) {
     rconClient.host = host;
     rconClient.port = parseInt(port);
     rconClient.password = password || '';
+    rconClient.onData = (text) => {
+      ws.send(JSON.stringify({ type: 'output', data: text }));
+    };
     await rconClient.connect();
     ws.send(JSON.stringify({ type: 'connected', data: `${host}:${port}` }));
   } catch (err) {
+    rconClient.onData = null;
     let userMessage = `Connection failed: ${err.message}`;
     if (err.code === 'ECONNREFUSED') {
       userMessage = `Connection refused — check that RCON is enabled on ${host}:${port} and the port is open.`;

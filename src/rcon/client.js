@@ -43,7 +43,7 @@ class EvrimaRCONClient {
     this.maxReconnectAttempts = 5;
   }
 
-  connect() {
+  async   connect() {
     return new Promise((resolve, reject) => {
       if (this.connected && this.socket) {
         return resolve(true);
@@ -61,6 +61,7 @@ class EvrimaRCONClient {
           socket.removeListener('error', onError);
           socket.removeListener('close', onClose);
           socket.removeListener('timeout', onTimeout);
+          socket.removeListener('data', onData);
           if (err) reject(err);
         }
       };
@@ -72,6 +73,7 @@ class EvrimaRCONClient {
           this.reconnectAttempts = 0;
           console.log(`[RCON] Connected to ${this.host}:${this.port}`);
           cleanup();
+          this._startKeepAlive();
           this._processQueue();
           resolve(true);
         } catch (error) {
@@ -92,6 +94,7 @@ class EvrimaRCONClient {
       const onClose = () => {
         this.connected = false;
         this.socket = null;
+        this._stopKeepAlive();
         console.log('[RCON] Connection closed');
         cleanup(new Error('Connection closed'));
       };
@@ -102,12 +105,42 @@ class EvrimaRCONClient {
         cleanup(new Error('Connection timeout'));
       };
 
+      const onData = (chunk) => {
+        const text = chunk.toString('utf8').replace(/\0+$/, '');
+        if (text && this.onData) {
+          this.onData(text);
+        }
+      };
+
       socket.on('connect', onConnect);
       socket.on('error', onError);
       socket.on('close', onClose);
       socket.on('timeout', onTimeout);
+      socket.on('data', onData);
       socket.connect(this.port, this.host);
     });
+  }
+
+  _keepAliveTimer = null;
+  _liveBuffer = '';
+
+  _startKeepAlive() {
+    this._stopKeepAlive();
+    this._keepAliveTimer = setInterval(async () => {
+      if (!this.connected) return;
+      try {
+        await this.execute('serverdetails');
+      } catch (e) {
+        console.log('[RCON] Keep-alive failed, connection may be dead');
+      }
+    }, 30000);
+  }
+
+  _stopKeepAlive() {
+    if (this._keepAliveTimer) {
+      clearInterval(this._keepAliveTimer);
+      this._keepAliveTimer = null;
+    }
   }
 
   async _authenticate() {
