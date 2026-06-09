@@ -26,6 +26,9 @@
       "RCON_PORT": "8888",
       "RCON_PASSWORD": "",
       "RCON_TIMEOUT": "10000",
+      "DEPLOY_WEBHOOK_TOKEN": "",
+      "DEPLOY_ALLOWED_USERS": "",
+      "WEBHOOK_PORT": "3000",
       "NODE_ENV": "production"
     }
   },
