@@ -10,6 +10,7 @@ const COMMAND_OPCODES = {
   togglemigrations: 0x19,
   ban: 0x20,
   togglegrowthmultiplier: 0x21,
+  setgrowthmultiplier: 0x22,
   togglenetupdatedistancechecks: 0x23,
   kick: 0x30,
   playerlist: 0x40,
@@ -41,9 +42,10 @@ class EvrimaRCONClient {
     this.processing = false;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
+    this.onData = null;
   }
 
-  async   connect() {
+  connect() {
     return new Promise((resolve, reject) => {
       if (this.connected && this.socket) {
         return resolve(true);
@@ -121,39 +123,14 @@ class EvrimaRCONClient {
     });
   }
 
-  _keepAliveTimer = null;
-  _liveBuffer = '';
-
-  _startKeepAlive() {
-    this._stopKeepAlive();
-    this._keepAliveTimer = setInterval(async () => {
-      if (!this.connected) return;
-      try {
-        await this.execute('serverdetails');
-      } catch (e) {
-        console.log('[RCON] Keep-alive failed, connection may be dead');
-      }
-    }, 30000);
-  }
-
-  _stopKeepAlive() {
-    if (this._keepAliveTimer) {
-      clearInterval(this._keepAliveTimer);
-      this._keepAliveTimer = null;
-    }
-  }
-
   async _authenticate() {
     const authPacket = Buffer.from([0x01, ...Buffer.from(this.password, 'utf8'), 0x00]);
     const response = await this._sendRaw(authPacket);
     
-    if (response && response.includes('authentication successful')) {
+    if (response && response.includes('Password Accepted')) {
       return;
     }
-    if (response && (response.includes('auth') || response.includes('password') || response.length > 0)) {
-      return;
-    }
-    throw new Error('RCON authentication failed');
+    throw new Error('Incorrect RCON password');
   }
 
   _sendRaw(data) {
@@ -299,6 +276,27 @@ class EvrimaRCONClient {
     return result.data;
   }
 
+  _keepAliveTimer = null;
+
+  _startKeepAlive() {
+    this._stopKeepAlive();
+    this._keepAliveTimer = setInterval(async () => {
+      if (!this.connected) return;
+      try {
+        await this.execute('serverdetails');
+      } catch (e) {
+        console.log('[RCON] Keep-alive failed, connection may be dead');
+      }
+    }, 30000);
+  }
+
+  _stopKeepAlive() {
+    if (this._keepAliveTimer) {
+      clearInterval(this._keepAliveTimer);
+      this._keepAliveTimer = null;
+    }
+  }
+
   _processQueue() {
     if (this.processing || this.commandQueue.length === 0) return;
     this.processing = true;
@@ -325,9 +323,9 @@ class EvrimaRCONClient {
     }
     this.connected = false;
     this.commandQueue = [];
+    this._stopKeepAlive();
   }
 }
 
 export const rconClient = new EvrimaRCONClient();
-
 export default rconClient;
