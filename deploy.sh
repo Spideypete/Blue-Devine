@@ -48,6 +48,10 @@ echo "🌐 Starting web terminal..."
 node src/web/server.js &
 WEB_PID=$!
 
+echo "🔗 Starting deploy webhook..."
+node src/webhook.js &
+WEBHOOK_PID=$!
+
 echo "🤖 Starting Discord bot..."
 npm start
 
@@ -55,6 +59,7 @@ cleanup() {
     echo ""
     echo "[Shutdown] Stopping services..."
     kill $WEB_PID 2>/dev/null || true
+    kill $WEBHOOK_PID 2>/dev/null || true
     wait
     echo "[Shutdown] Done"
     exit 0

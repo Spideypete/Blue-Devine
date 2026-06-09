@@ -114,6 +114,12 @@ Restart server after changes. Open port 8888 in firewall.
 - Type custom commands directly in terminal
 - Timestamped output with color coding (yellow=outgoing, green=response, red=error)
 
+### Deploy Webhook (Optional)
+- Set `DEPLOY_WEBHOOK_TOKEN` in `.env` to enable a GitHub webhook for remote deploys
+- Optionally set `DEPLOY_ALLOWED_USERS` (comma-separated Discord user IDs) to restrict access
+- The webhook listens on port `WEBHOOK_PORT` (default 3001)
+- Send a POST request to `/deploy/<your-token>` to trigger `bash deploy.sh`
+
 ## Permissions
 
 | Role | Access |

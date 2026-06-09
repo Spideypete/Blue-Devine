@@ -3,6 +3,7 @@ import 'dotenv/config';
 import rconManager from './rcon/manager.js';
 import { logger } from './utils/logger.js';
 import { evrimaCommand, handleButtonInteraction } from './commands/evrima.js';
+import { startDeployWebhook } from './webhook.js';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
@@ -15,6 +16,7 @@ client.once('ready', async () => {
   console.log(`[Discord] Logged in as ${client.user.tag}`);
   console.log(`[Discord] Serving ${client.guilds.cache.size} guilds`);
   logger.setClient(client);
+  startDeployWebhook(client);
 
   try {
     console.log('[Discord] Registering slash commands...');
