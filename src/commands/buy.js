@@ -10,46 +10,37 @@ export const data = new SlashCommandBuilder()
   .setDescription('Buy a dinosaur with coins');
 
 export async function execute(interaction) {
-  await interaction.deferReply({ flags: 64 });
-  const userId = interaction.user.id;
-  buyState.delete(userId);
-  
-  buyState.set(userId, { step: 'species', dinoKey: null, gender: null, growth: null, isPrime: false, mutations: [null,null,null,null], speciesPage: 0 });
-  
-  const view = buildSpeciesView(userId);
-  const embed = view.embed || new EmbedBuilder().setTitle('Error').setDescription('Try again').setColor(0xff0000);
-  const components = view.components || [];
-  let msg = null;
-  
+  console.log('[Buy] execute called');
   try {
-    msg = await interaction.editReply({ embeds: [embed], components });
-    buyState.get(userId).msgId = msg.id;
-  } catch (err) {
-    console.error('[Buy] Error:', err.message);
-    try {
-      const embedJson = embed.toJSON ? embed.toJSON() : embed;
-      console.error('[Buy] Embed:', JSON.stringify(embedJson).substring(0, 500));
-      for (const row of components) {
-        for (const comp of row.components || []) {
-          if (comp.data && comp.data.options) {
-            for (const opt of comp.data.options) {
-              console.log('[Buy] Option:', JSON.stringify(opt).substring(0, 200));
-            }
-          }
-        }
-      }
-    } catch (logErr) {
-      console.error('[Buy] Log error:', logErr.message);
-    }
-    return interaction.editReply({
-      embeds: [new EmbedBuilder().setTitle('❌ Error').setDescription('Failed. Contact admin.').setColor(0xff0000)],
-      components: []
-    });
+    await interaction.deferReply({ flags: 64 });
+    console.log('[Buy] deferReply OK');
+  } catch (e) {
+    console.error('[Buy] deferReply failed:', e.message);
+    return interaction.reply({ embeds: [new EmbedBuilder().setTitle('❌ Error').setDescription('Defer failed').setColor(0xff0000)], flags: 64 });
   }
   
-  if (!msg) return;
+  const userId = interaction.user.id;
+  buyState.delete(userId);
+  buyState.set(userId, { step: 'species', dinoKey: null, gender: null, growth: null, isPrime: false, mutations: [null,null,null,null], speciesPage: 0 });
   
-  const collector = msg.createMessageComponentCollector({ time: 300000, filter: i => i.user.id === userId });
+  const dinoKeys = Object.keys(DINOS);
+  console.log('[Buy] Dino keys count:', dinoKeys.length);
+  console.log('[Buy] First 3 keys:', dinoKeys.slice(0, 3));
+  
+  try {
+    const embed = new EmbedBuilder()
+      .setTitle('🦕 Buy Test')
+      .setDescription('Testing basic embed')
+      .setColor(0x3498db);
+    
+    console.log('[Buy] Sending minimal embed...');
+    await interaction.editReply({ embeds: [embed], components: [] });
+    console.log('[Buy] Minimal embed sent OK');
+  } catch (e) {
+    console.error('[Buy] Minimal embed failed:', e.message);
+    console.error('[Buy] Error code:', e.code);
+  }
+}
   
   collector.on('collect', async i => {
     const state = buyState.get(userId);
