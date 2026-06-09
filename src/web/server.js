@@ -102,13 +102,26 @@ wss.on('connection', (ws) => {
 async function handleConnect(ws, data) {
   const { host, port, password } = data;
   try {
+    if (!host || !port) {
+      throw new Error('Host and port are required');
+    }
     rconClient.host = host;
     rconClient.port = parseInt(port);
-    rconClient.password = password;
+    rconClient.password = password || '';
     await rconClient.connect();
     ws.send(JSON.stringify({ type: 'connected', data: `${host}:${port}` }));
   } catch (err) {
-    ws.send(JSON.stringify({ type: 'error', data: `Connection failed: ${err.message}` }));
+    let userMessage = `Connection failed: ${err.message}`;
+    if (err.code === 'ECONNREFUSED') {
+      userMessage = `Connection refused — check that RCON is enabled on ${host}:${port} and the port is open.`;
+    } else if (err.code === 'ENOTFOUND' || err.code === 'EAI_AGAIN') {
+      userMessage = `Invalid host "${host}" — check the server IP or hostname.`;
+    } else if (err.code === 'ETIMEDOUT' || err.message.includes('timeout')) {
+      userMessage = `Connection timed out — check the IP/port and firewall settings.`;
+    } else if (err.message.includes('authentication')) {
+      userMessage = `Authentication failed — check the RCON password.`;
+    }
+    ws.send(JSON.stringify({ type: 'error', data: userMessage }));
   }
 }
 
