@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { DINOS } from '../economy/dinos.js';
 import { purchaseDino, getDinoPrice } from '../economy/inventory.js';
 import { getSetting, getBalance } from '../economy/coins.js';
@@ -11,13 +11,12 @@ export const data = new SlashCommandBuilder()
 
 export async function execute(interaction) {
   await interaction.deferReply();
-  
   const userId = interaction.user.id;
   buyState.delete(userId);
   buyState.set(userId, { step: 'species', dinoKey: null, gender: null, growth: null, isPrime: false, mutations: [null,null,null,null], speciesPage: 0 });
   
-  const view = buildSpeciesView(userId);
-  const msg = await interaction.editReply({ embeds: [view.embed], components: view.components });
+  const { embed, components } = buildSpeciesView(userId);
+  const msg = await interaction.editReply({ embeds: [embed], components });
   buyState.get(userId).msgId = msg.id;
   
   const collector = msg.createMessageComponentCollector({ time: 300000, filter: i => i.user.id === userId });
@@ -25,19 +24,14 @@ export async function execute(interaction) {
   collector.on('collect', async i => {
     const state = buyState.get(userId);
     if (!state) { collector.stop(); return; }
-    
     try {
       if (i.customId === 'cancel') {
         buyState.delete(userId);
         await i.update({ embeds: [new EmbedBuilder().setTitle('❌ Cancelled').setColor(0xff0000)], components: [] });
-        collector.stop();
-        return;
+        collector.stop(); return;
       }
-      
-      if (i.customId === 'species_select') {
-        const raw = i.values[0];
-        if (!raw || typeof raw !== 'string') return;
-        const dinoKey = raw.replace('species_', '');
+      if (i.customId.startsWith('species_')) {
+        const dinoKey = i.customId.replace('species_', '');
         if (!DINOS[dinoKey]) return;
         state.dinoKey = dinoKey;
         state.step = 'gender';
@@ -45,7 +39,18 @@ export async function execute(interaction) {
         await i.update({ embeds: [v.embed], components: v.components });
         return;
       }
-      
+      if (i.customId === 'page_prev') {
+        state.speciesPage = Math.max(0, (state.speciesPage||0)-1);
+        const v = buildSpeciesView(userId);
+        await i.update({ embeds: [v.embed], components: v.components });
+        return;
+      }
+      if (i.customId === 'page_next') {
+        state.speciesPage = (state.speciesPage||0)+1;
+        const v = buildSpeciesView(userId);
+        await i.update({ embeds: [v.embed], components: v.components });
+        return;
+      }
       if (i.customId === 'gender_male' || i.customId === 'gender_female') {
         state.gender = i.customId === 'gender_male' ? 'male' : 'female';
         state.step = 'growth';
@@ -53,7 +58,6 @@ export async function execute(interaction) {
         await i.update({ embeds: [v.embed], components: v.components });
         return;
       }
-      
       if (i.customId === 'growth_select') {
         const raw = i.values[0];
         if (!raw) return;
@@ -64,7 +68,6 @@ export async function execute(interaction) {
         await i.update({ embeds: [v.embed], components: v.components });
         return;
       }
-      
       if (i.customId === 'prime_yes') {
         state.isPrime = !!DINOS[state.dinoKey]?.hasPrime;
         state.mutations[3] = null;
@@ -81,7 +84,6 @@ export async function execute(interaction) {
         await i.update({ embeds: [v.embed], components: v.components });
         return;
       }
-      
       if (i.customId.startsWith('mutation_')) {
         const slot = parseInt(i.customId.replace('mutation_', ''));
         if (isNaN(slot)) return;
@@ -92,24 +94,21 @@ export async function execute(interaction) {
         await i.update({ embeds: [v.embed], components: v.components });
         return;
       }
-      
       if (i.customId === 'summary') {
         state.step = 'summary';
         const v = buildSummaryView(userId);
         await i.update({ embeds: [v.embed], components: v.components });
         return;
       }
-      
       if (i.customId === 'confirm') {
         const result = await purchaseDino(userId, state.dinoKey, state.gender, state.growth, state.isPrime, state.mutations);
         buyState.delete(userId);
-        
         if (!result.success) {
           await i.update({ embeds: [new EmbedBuilder().setTitle('❌ Failed').setDescription(result.message).setColor(0xff0000)], components: [] });
         } else {
           const dino = DINOS[state.dinoKey];
           const symbol = await getSetting('currency_symbol') || '🪙';
-          const muts = state.mutations.filter(Boolean).map(m => m).join(', ') || 'None';
+          const muts = state.mutations.filter(Boolean).join(', ') || 'None';
           const embed = new EmbedBuilder().setTitle('✅ Purchased!').setDescription(`**${state.isPrime ? 'Prime ' : ''}${dino.name}**`)
             .addFields(
               { name: 'Gender', value: state.gender === 'male' ? '♂ Male' : '♀ Female', inline: true },
@@ -121,10 +120,8 @@ export async function execute(interaction) {
             ).setColor(0x2ecc71);
           await i.update({ embeds: [embed], components: [] });
         }
-        collector.stop();
-        return;
+        collector.stop(); return;
       }
-      
       if (i.customId === 'back') {
         const steps = { mutations: 'prime', prime: 'growth', growth: 'gender', gender: 'species', summary: 'mutations' };
         const prev = steps[state.step];
@@ -144,7 +141,7 @@ export async function execute(interaction) {
   collector.on('end', () => buyState.delete(userId));
 }
 
-async function buildSpeciesView(userId) {
+function buildSpeciesView(userId) {
   const state = buyState.get(userId);
   const keys = Object.keys(DINOS);
   const pageSize = 12;
@@ -153,40 +150,23 @@ async function buildSpeciesView(userId) {
   state.speciesPage = page;
   const pageKeys = keys.slice(page * pageSize, page * pageSize + pageSize);
   
-  const options = [];
-  for (const k of pageKeys) {
-    const dino = DINOS[k];
-    if (!dino || !dino.name) continue;
-    const label = String(dino.name).substring(0, 100);
-    const desc = `${dino.diet || 'unknown'}${dino.hasPrime ? ' | Prime' : ''}`.substring(0, 100);
-    options.push({
-      label,
-      value: `species_${k}`,
-      description: desc || ' '
-    });
-  }
-  
-  if (options.length === 0) {
-    return {
-      embed: new EmbedBuilder().setTitle('🦕 Buy Dinosaur').setDescription('No dinosaurs available.').setColor(0xff0000),
-      components: []
-    };
-  }
-  
   const embed = new EmbedBuilder()
     .setTitle('🦕 Buy Dinosaur')
-    .setDescription('Select a species to purchase')
+    .setDescription('Select a species')
     .setFooter({ text: `Page ${page+1}/${totalPages}` })
     .setColor(0x3498db);
   
   const rows = [];
-  rows.push(new ActionRowBuilder().addComponents(
-    new StringSelectMenuBuilder()
-      .setCustomId('species_select')
-      .setPlaceholder('Choose a species...')
-      .addOptions(options)
-  ));
-  
+  const buttons = [];
+  for (const k of pageKeys) {
+    const dino = DINOS[k];
+    if (!dino || !dino.name) continue;
+    buttons.push(new ButtonBuilder().setCustomId(`species_${k}`).setLabel(dino.name.substring(0, 80)).setStyle(ButtonStyle.Primary));
+  }
+  if (buttons.length > 0) {
+    rows.push(new ActionRowBuilder().addComponents(...buttons.slice(0, 5)));
+    if (buttons.length > 5) rows.push(new ActionRowBuilder().addComponents(...buttons.slice(5, 10)));
+  }
   const nav = [];
   if (totalPages > 1) {
     nav.push(new ButtonBuilder().setCustomId('page_prev').setLabel('◀').setStyle(ButtonStyle.Secondary).setDisabled(page === 0));
@@ -194,7 +174,6 @@ async function buildSpeciesView(userId) {
   }
   nav.push(new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger));
   rows.push(new ActionRowBuilder().addComponents(nav));
-  
   return { embed, components: rows };
 }
 
@@ -205,7 +184,6 @@ async function buildGenderView(userId) {
   const price = await getDinoPrice(state.dinoKey);
   const symbol = await getSetting('currency_symbol') || '🪙';
   const balance = await getBalance(userId);
-  
   const embed = new EmbedBuilder().setTitle(`🦕 ${dino.name}`).setDescription(`Diet: **${dino.diet}** | Prime: ${dino.hasPrime ? '✅' : '❌'}`)
     .addFields({ name: '💰 Price', value: `${price} ${symbol}`, inline: true }, { name: '💳 Balance', value: `${balance} ${symbol}`, inline: true })
     .setColor(0x3498db);
@@ -252,12 +230,10 @@ async function buildMutationView(userId) {
   const available = getAvailableMutations(state.dinoKey);
   const slotCount = state.isPrime ? 4 : 3;
   const rows = [];
-  
   for (let s = 0; s < slotCount; s++) {
     const slotNum = s + 1;
     const range = getSlotMutationRange(slotNum, state.isPrime);
     const rangeText = range ? `${range[0]}%-${range[1]}%` : 'N/A';
-    
     const opts = [];
     for (const m of available) {
       const key = m.key;
@@ -265,32 +241,20 @@ async function buildMutationView(userId) {
       const label = String(m.name || key).substring(0, 100);
       const desc = String(m.desc || '').substring(0, 50);
       if (!label) continue;
-      opts.push({
-        label,
-        value: key,
-        description: desc || ' ',
-        default: state.mutations[s] === key
-      });
+      opts.push({ label, value: key, description: desc || ' ', default: state.mutations[s] === key });
     }
     if (opts.length === 0) continue;
-    
     rows.push(new ActionRowBuilder().addComponents(
-      new StringSelectMenuBuilder()
-        .setCustomId(`mutation_${s}`)
-        .setPlaceholder(`Slot ${slotNum} (${rangeText})`)
-        .addOptions(opts)
+      new StringSelectMenuBuilder().setCustomId(`mutation_${s}`).setPlaceholder(`Slot ${slotNum} (${rangeText})`).addOptions(opts)
     ));
   }
-  
   const selected = state.mutations.slice(0, slotCount).filter(Boolean).join('\n') || 'None';
   const embed = new EmbedBuilder().setTitle('🧬 Mutations').setDescription('Pick mutations for each slot').addFields({ name: 'Selected', value: selected }).setColor(0x3498db);
-  
   rows.push(new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('back').setLabel('◀ Back').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('summary').setLabel('📋 Summary').setStyle(ButtonStyle.Primary),
     new ButtonBuilder().setCustomId('cancel').setLabel('Cancel').setStyle(ButtonStyle.Danger)
   ));
-  
   return { embed, components: rows };
 }
 
@@ -302,7 +266,6 @@ async function buildSummaryView(userId) {
   const symbol = await getSetting('currency_symbol') || '🪙';
   const muts = (state.mutations || []).filter(Boolean).join(', ') || 'None';
   const afterBalance = (balance - price);
-  
   const embed = new EmbedBuilder().setTitle('📋 Summary').setDescription('Confirm purchase')
     .addFields(
       { name: 'Species', value: dino.name || 'Unknown', inline: true },
@@ -321,4 +284,3 @@ async function buildSummaryView(userId) {
   )];
   return { embed, components: rows };
 }
-
