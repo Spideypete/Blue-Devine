@@ -5,8 +5,8 @@ import { logger } from './utils/logger.js';
 import { evrimaCommand, handleButtonInteraction } from './commands/evrima.js';
 import { startDeployWebhook } from './webhook.js';
 import { coinCommands, handleCoinCommand } from './commands/coins.js';
-import { buyCommand, handleBuyInteraction } from './commands/buy.js';
-import { inventoryCommand } from './commands/inventory.js';
+import { data as buyData, execute as buyExecute } from './commands/buy.js';
+import { data as inventoryData, execute as inventoryExecute } from './commands/inventory.js';
 import { ensureDb } from './economy/coins.js';
 
 const client = new Client({
@@ -20,8 +20,8 @@ for (const [name, cmd] of Object.entries(coinCommands)) {
   client.commands.set(name, cmd);
 }
 
-client.commands.set(buyCommand.data.name, buyCommand);
-client.commands.set(inventoryCommand.data.name, inventoryCommand);
+client.commands.set(buyData.name, { data: buyData, execute: buyExecute });
+client.commands.set(inventoryData.name, { data: inventoryData, execute: inventoryExecute });
 
 client.once('ready', async () => {
   console.log(`[Discord] Logged in as ${client.user.tag}`);
@@ -45,8 +45,8 @@ client.once('ready', async () => {
     for (const cmd of Object.values(coinCommands)) {
       commandsData.push(cmd.data.toJSON());
     }
-    commandsData.push(buyCommand.data.toJSON());
-    commandsData.push(inventoryCommand.data.toJSON());
+    commandsData.push(buyData.toJSON());
+    commandsData.push(inventoryData.toJSON());
 
     await rest.put(Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, process.env.GUILD_ID), { body: commandsData });
 
