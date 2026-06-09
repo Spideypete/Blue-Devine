@@ -282,26 +282,40 @@ app.get('/api/database/players', async (req, res) => {
   try {
     const { ensureDb } = await import('../economy/coins.js');
     await ensureDb();
-    const db = (await import('../economy/coins.js')).getDb();
+    const coinsDb = (await import('../economy/coins.js')).getDb();
     
-    const result = db.exec(`
-      SELECT a.discord_id, a.steam_id, a.balance, a.last_daily,
-             COUNT(i.id) as inventory_count
-      FROM accounts a
-      LEFT JOIN dino_inventory i ON a.discord_id = i.discord_id
-      GROUP BY a.discord_id
-      ORDER BY a.balance DESC
+    const { ensureInventoryDb } = await import('../economy/inventory.js');
+    await ensureInventoryDb();
+    const invDb = (await import('../economy/inventory.js')).getDb();
+    
+    const playersResult = coinsDb.exec(`
+      SELECT discord_id, steam_id, balance, last_daily
+      FROM accounts
+      ORDER BY balance DESC
     `);
     
+    const invResult = invDb.exec(`
+      SELECT discord_id, COUNT(*) as count
+      FROM dino_inventory
+      GROUP BY discord_id
+    `);
+    
+    const invCounts = {};
+    if (invResult.length > 0) {
+      for (const row of invResult[0].values) {
+        invCounts[row[0]] = row[1];
+      }
+    }
+    
     const players = [];
-    if (result.length > 0) {
-      for (const row of result[0].values) {
+    if (playersResult.length > 0) {
+      for (const row of playersResult[0].values) {
         players.push({
           discord_id: row[0],
           steam_id: row[1],
           balance: row[2],
           last_daily: row[3],
-          inventory_count: row[4]
+          inventory_count: invCounts[row[0]] || 0
         });
       }
     }
@@ -316,21 +330,36 @@ app.get('/api/database/inventory', async (req, res) => {
   try {
     const { ensureInventoryDb } = await import('../economy/inventory.js');
     await ensureInventoryDb();
-    const db = (await import('../economy/inventory.js')).getDb();
+    const invDb = (await import('../economy/inventory.js')).getDb();
+    const { DINOS } = await import('../economy/dinos.js');
     
-    const result = db.exec(`
-      SELECT i.*, d.name as dino_name, d.diet as dino_diet
-      FROM dino_inventory i
-      LEFT JOIN dino_prices d ON i.dino_key = d.dino_key
-      ORDER BY i.purchased_at DESC
+    const result = invDb.exec(`
+      SELECT id, discord_id, dino_key, gender, growth, is_prime,
+             mutation_slot_1, mutation_slot_2, mutation_slot_3, mutation_slot_4,
+             purchased_at
+      FROM dino_inventory
+      ORDER BY purchased_at DESC
     `);
     
     const items = [];
     if (result.length > 0) {
       for (const row of result[0].values) {
-        const obj = {};
-        result[0].columns.forEach((col, i) => obj[col] = row[i]);
-        items.push(obj);
+        const dino = DINOS[row[2]] || {};
+        items.push({
+          id: row[0],
+          discord_id: row[1],
+          dino_key: row[2],
+          dino_name: dino.name || row[2],
+          dino_diet: dino.diet || 'unknown',
+          gender: row[3],
+          growth: row[4],
+          is_prime: row[5],
+          mutation_slot_1: row[6],
+          mutation_slot_2: row[7],
+          mutation_slot_3: row[8],
+          mutation_slot_4: row[9],
+          purchased_at: row[10]
+        });
       }
     }
     
