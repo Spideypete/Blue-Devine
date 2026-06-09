@@ -134,7 +134,25 @@ async function buildSpeciesView(userId) {
   state.speciesPage = page;
   const pageKeys = keys.slice(page * pageSize, page * pageSize + pageSize);
   
-  const options = pageKeys.map(k => ({ label: DINOS[k].name, value: `species_${k}`, description: `${DINOS[k].diet}${DINOS[k].hasPrime ? ' | Prime' : ''}` }));
+  const options = pageKeys.map(k => {
+    const dino = DINOS[k];
+    if (!dino || !dino.name) return null;
+    return {
+      label: dino.name.substring(0, 100),
+      value: `species_${k}`,
+      description: `${dino.diet}${dino.hasPrime ? ' | Prime' : ''}`.substring(0, 100)
+    };
+  }).filter(Boolean);
+  
+  if (options.length === 0) {
+    return {
+      embed: new EmbedBuilder()
+        .setTitle('🦕 Buy Dinosaur')
+        .setDescription('No dinosaurs available right now.')
+        .setColor(0xff0000),
+      components: []
+    };
+  }
   
   const embed = new EmbedBuilder().setTitle('🦕 Buy Dinosaur').setDescription('Select a species').setFooter({ text: `Page ${page+1}/${totalPages}` }).setColor(0x3498db);
   const rows = [
