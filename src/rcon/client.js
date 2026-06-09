@@ -52,37 +52,59 @@ class EvrimaRCONClient {
       this.socket = new net.Socket();
       this.socket.setTimeout(this.timeout);
 
-      this.socket.connect(this.port, this.host, async () => {
+      let resolved = false;
+      const cleanup = (err) => {
+        if (!resolved) {
+          resolved = true;
+          this.socket.removeListener('connect', onConnect);
+          this.socket.removeListener('error', onError);
+          this.socket.removeListener('close', onClose);
+          this.socket.removeListener('timeout', onTimeout);
+          if (err) reject(err);
+        }
+      };
+
+      const onConnect = async () => {
         try {
           await this._authenticate();
           this.connected = true;
           this.reconnectAttempts = 0;
           console.log(`[RCON] Connected to ${this.host}:${this.port}`);
+          cleanup();
           this._processQueue();
           resolve(true);
         } catch (error) {
           this.socket.destroy();
           this.connected = false;
-          reject(error);
+          cleanup(error);
         }
-      });
+      };
 
-      this.socket.on('error', (error) => {
+      const onError = (error) => {
         console.error('[RCON] Socket error:', error.message);
         this.connected = false;
         this.socket = null;
-      });
+        cleanup(error);
+      };
 
-      this.socket.on('close', () => {
+      const onClose = () => {
         this.connected = false;
         this.socket = null;
         console.log('[RCON] Connection closed');
-      });
+        cleanup(new Error('Connection closed'));
+      };
 
-      this.socket.on('timeout', () => {
+      const onTimeout = () => {
         console.log('[RCON] Connection timeout');
         this.socket.destroy();
-      });
+        cleanup(new Error('Connection timeout'));
+      };
+
+      this.socket.on('connect', onConnect);
+      this.socket.on('error', onError);
+      this.socket.on('close', onClose);
+      this.socket.on('timeout', onTimeout);
+      this.socket.connect(this.port, this.host);
     });
   }
 
