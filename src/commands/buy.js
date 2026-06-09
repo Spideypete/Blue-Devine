@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { DINOS, getAvailableMutations, getSlotMutationRange, MUTATION_INFO } from '../economy/dinos.js';
-import { purchaseDino, getDinoPrice, getSetting } from '../economy/inventory.js';
-import { getBalance } from '../economy/coins.js';
+import { purchaseDino, getDinoPrice } from '../economy/inventory.js';
+import { getSetting, getBalance } from '../economy/coins.js';
 
 const buyState = new Map();
 
