@@ -6,10 +6,10 @@ import { dirname, join } from 'path';
 import rconClient from '../rcon/client.js';
 import {
   getCommandCost, setCommandCost, getSetting, setSetting,
-  getAllAccounts, getTransactionHistory, ensureDb, getDb as getCoinsDb
+  getAllAccounts, getTransactionHistory, ensureDb, getCoinsDb
 } from '../economy/coins.js';
 import {
-  ensureInventoryDb, getDb as getInvDb, getAllDinoPrices, setDinoPrice, getDinoById
+  ensureInventoryDb, getInvDb, getAllDinoPrices, setDinoPrice, getDinoById, saveDatabase
 } from '../economy/inventory.js';
 import { DINOS, MUTATION_INFO, DIET_MUTATIONS } from '../economy/dinos.js';
 
