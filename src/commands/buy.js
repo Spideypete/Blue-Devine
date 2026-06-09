@@ -125,7 +125,7 @@ export async function execute(interaction) {
   collector.on('end', () => buyState.delete(userId));
 }
 
-function buildSpeciesView(userId) {
+async function buildSpeciesView(userId) {
   const state = buyState.get(userId);
   const keys = Object.keys(DINOS);
   const pageSize = 12;
@@ -150,7 +150,7 @@ function buildSpeciesView(userId) {
   return { embed, components: rows };
 }
 
-function buildGenderView(userId) {
+async function buildGenderView(userId) {
   const state = buyState.get(userId);
   const dino = DINOS[state.dinoKey];
   const price = await getDinoPrice(state.dinoKey);
@@ -169,7 +169,7 @@ function buildGenderView(userId) {
   return { embed, components: rows };
 }
 
-function buildGrowthView(userId) {
+async function buildGrowthView(userId) {
   const options = [40,45,50,55,60,65,70,75,80,85,90,95,100].map(g => ({ label: `${g}%`, value: String(g) }));
   const embed = new EmbedBuilder().setTitle('📊 Select Growth').setDescription('Choose growth percentage').setColor(0x3498db);
   const rows = [
@@ -182,7 +182,7 @@ function buildGrowthView(userId) {
   return { embed, components: rows };
 }
 
-function buildPrimeView(userId) {
+async function buildPrimeView(userId) {
   const state = buyState.get(userId);
   if (!DINOS[state.dinoKey]?.hasPrime) {
     state.isPrime = false;
@@ -198,7 +198,7 @@ function buildPrimeView(userId) {
   return { embed, components: rows };
 }
 
-function buildMutationView(userId) {
+async function buildMutationView(userId) {
   const state = buyState.get(userId);
   const available = getAvailableMutations(state.dinoKey);
   const slotCount = state.isPrime ? 4 : 3;
@@ -223,7 +223,7 @@ function buildMutationView(userId) {
   return { embed, components: rows };
 }
 
-function buildSummaryView(userId) {
+async function buildSummaryView(userId) {
   const state = buyState.get(userId);
   const dino = DINOS[state.dinoKey];
   const price = await getDinoPrice(state.dinoKey);
