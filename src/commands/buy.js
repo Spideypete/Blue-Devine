@@ -19,9 +19,10 @@ export async function execute(interaction) {
   const view = buildSpeciesView(userId);
   const embed = view.embed || new EmbedBuilder().setTitle('Error').setDescription('Try again').setColor(0xff0000);
   const components = view.components || [];
+  let msg = null;
   
   try {
-    const msg = await interaction.editReply({ embeds: [embed], components });
+    msg = await interaction.editReply({ embeds: [embed], components });
     buyState.get(userId).msgId = msg.id;
   } catch (err) {
     console.error('[Buy] Error:', err.message);
@@ -45,6 +46,8 @@ export async function execute(interaction) {
       components: []
     });
   }
+  
+  if (!msg) return;
   
   const collector = msg.createMessageComponentCollector({ time: 300000, filter: i => i.user.id === userId });
   
